@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MamãoChat - Simulação de E-commerce com Estoque</title>
+    <style>
+        /* Seu CSS original aqui */
+        body { margin: 0 20px; padding: 10px; font-family: sans-serif; background-color: #E6F0FA; color: #333; }
+        #messages, #store-messages { border: 2px solid #4682B4; padding: 10px; background-color: #fff; min-height: 200px; margin-bottom: 10px; }
+        .bot { color: #333; }
+        .user { color: #007bff; }
+        #welcome-container, #chat-container, #store-container, #stock-container { border: 2px solid #4682B4; padding: 20px; background-color: #fff; width: 300px; margin: 20px auto; text-align: center; }
+        input { padding: 5px; width: 80%; margin: 5px 0; border: 1px solid #4682B4; }
+        button { padding: 5px 10px; margin: 5px; cursor: pointer; background-color: #E6F0FA; border: 1px solid #4682B4; }
+        #stock-list { max-height: 150px; overflow-y: auto; margin-top: 10px; border: 1px solid #4682B4; }
+    </style>
+</head>
+<body>
+    <div id="welcome-container">
+        <h2>Bem-vindo ao MamãoChat</h2>
+        <button onclick="showChat()">Entrar como Lojista</button>
+    </div>
+    <div id="chat-container" class="hidden">
+        <div id="messages"></div>
+        <div id="categories">
+            <h3>Lojas</h3>
+            <button onclick="selectStore('joao')">Mercado João</button>
+            <button onclick="selectStore('pedro')">Bar do Pedro</button>
+        </div>
+        <input type="text" id="chat-input" placeholder="Digite aqui...">
+        <button onclick="sendMessage()">Enviar</button>
+    </div>
+    <div id="store-container" class="hidden">
+        <div id="store-messages"></div>
+        <div id="product-list"><h4>Produtos</h4></div>
+        <div id="cart"><h4>Carrinho</h4><div id="cart-items"></div></div>
+        <input type="text" id="store-input" placeholder="Digite o produto...">
+        <button onclick="sendStoreMessage()">Enviar</button>
+    </div>
+    <div id="stock-container" class="hidden">
+        <h2>Controle de Estoque</h2>
+        <button onclick="showAddStock()">Adicionar Produto</button>
+        <button onclick="showStock()">Ver Estoque</button>
+        <div id="stock-list"></div>
+    </div>
+
+    <script>
+        const welcomeContainer = document.getElementById("welcome-container");
+        const chatContainer = document.getElementById("chat-container");
+        const storeContainer = document.getElementById("store-container");
+        const stockContainer = document.getElementById("stock-container");
+        const messagesDiv = document.getElementById("messages");
+        const storeMessagesDiv = document.getElementById("store-messages");
+        const productList = document.getElementById("product-list");
+        const cartItems = document.getElementById("cart-items");
+        const stockList = document.getElementById("stock-list");
+        const chatInput = document.getElementById("chat-input");
+        const storeInput = document.getElementById("store-input");
+
+        // Dados iniciais (lojas e estoque)
+        let stores = {
+            "joao": { 
+                storeName: "Mercado João", 
+                products: [
+                    { name: "Sabão", price: "2.00", stock: 10 },
+                    { name: "Arroz", price: "25.00", stock: 20 }
+                ]
+            },
+            "pedro": { 
+                storeName: "Bar do Pedro", 
+                products: [
+                    { name: "Cerveja 1L", price: "3.00", stock: 15 },
+                    { name: "Pinga", price: "5.00", stock: 8 }
+                ]
+            }
+        };
+        let currentStore = null;
+        let cart = [];
+
+        // Funções do MamãoChat
+        function showChat() {
+            welcomeContainer.classList.add("hidden");
+            chatContainer.classList.remove("hidden");
+            addMessage("Escolha uma loja!", "bot");
+        }
+
+        function selectStore(store) {
+            currentStore = store;
+            chatContainer.classList.add("hidden");
+            storeContainer.classList.remove("hidden");
+            addStoreMessage(`Bem-vindo à ${stores[store].storeName}! Digite o produto ou 'estoque' para gerenciar.`, "bot");
+            updateProductList();
+        }
+
+        function addMessage(text, sender) {
+            const message = document.createElement("div");
+            message.classList.add(sender);
+            message.textContent = text;
+            messagesDiv.appendChild(message);
+        }
+
+        function addStoreMessage(text, sender) {
+            const message = document.createElement("div");
+            message.classList.add(sender);
+            message.textContent = text;
+            storeMessagesDiv.appendChild(message);
+        }
+
+        function updateProductList() {
+            productList.innerHTML = "<h4>Produtos</h4>";
+            stores[currentStore].products.forEach(p => {
+                productList.innerHTML += `<div>${p.name} - R$${p.price} (Estoque: ${p.stock})</div>`;
+            });
+        }
+
+        function sendMessage() {
+            const text = chatInput.value.trim().toLowerCase();
+            if (text) {
+                addMessage(text, "user");
+                chatInput.value = "";
+            }
+        }
+
+        function sendStoreMessage() {
+            const text = storeInput.value.trim().toLowerCase();
+            if (text === "estoque") {
+                storeContainer.classList.add("hidden");
+                stockContainer.classList.remove("hidden");
+                showStock();
+            } else if (text === "pagar" && cart.length) {
+                let total = cart.reduce((sum, p) => sum + parseFloat(p.price) * p.quantity, 0).toFixed(2);
+                cart.forEach(item => updateStock(item.name, -item.quantity));
+                addStoreMessage(`Compra de R$${total} confirmada! Estoque atualizado.`, "bot");
+                cart = [];
+                updateCart();
+                updateProductList();
+            } else {
+                let product = stores[currentStore].products.find(p => p.name.toLowerCase() === text);
+                if (product && product.stock > 0) {
+                    cart.push({ name: product.name, price: product.price, quantity: 1 });
+                    addStoreMessage(`${product.name} adicionado ao carrinho! Digite 'pagar' para finalizar.`, "bot");
+                    updateCart();
+                } else {
+                    addStoreMessage("Produto não encontrado ou sem estoque!", "bot");
+                }
+            }
+            storeInput.value = "";
+        }
+
+        function updateCart() {
+            cartItems.innerHTML = cart.map(p => `${p.name} - R$${p.price} (x${p.quantity})`).join("<br>");
+        }
+
+        // Funções de Estoque
+        function updateStock(productName, quantity) {
+            let product = stores[currentStore].products.find(p => p.name.toLowerCase() === productName.toLowerCase());
+            if (product) {
+                product.stock += quantity;
+                if (product.stock < 5) {
+                    addStoreMessage(`ALERTA: Estoque de ${product.name} está baixo (${product.stock})!`, "bot");
+                }
+            }
+        }
+
+        function showAddStock() {
+            stockList.innerHTML = `
+                <input id="stock-name" placeholder="Nome do produto"><br>
+                <input id="stock-quantity" placeholder="Quantidade a adicionar" type="number"><br>
+                <button onclick="addStock()">Adicionar</button>
+            `;
+        }
+
+        function addStock() {
+            const name = document.getElementById("stock-name").value.trim();
+            const quantity = parseInt(document.getElementById("stock-quantity").value);
+            if (name && quantity > 0) {
+                let product = stores[currentStore].products.find(p => p.name.toLowerCase() === name.toLowerCase());
+                if (product) {
+                    updateStock(name, quantity);
+                } else {
+                    stores[currentStore].products.push({ name: name, price: "0.00", stock: quantity });
+                }
+                showStock();
+            }
+        }
+
+        function showStock() {
+            stockList.innerHTML = "<h4>Estoque Atual</h4>";
+            stores[currentStore].products.forEach(p => {
+                stockList.innerHTML += `<div>${p.name}: ${p.stock} unidades</div>`;
+            });
+        }
+    </script>
+</body>
+</html>
