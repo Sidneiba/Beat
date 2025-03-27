@@ -3,194 +3,940 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MamãoChat - Simulação de E-commerce com Estoque</title>
+    <title>Mamão Chat - Mercado do Bairro</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
-        /* Seu CSS original aqui */
-        body { margin: 0 20px; padding: 10px; font-family: sans-serif; background-color: #E6F0FA; color: #333; }
-        #messages, #store-messages { border: 2px solid #4682B4; padding: 10px; background-color: #fff; min-height: 200px; margin-bottom: 10px; }
-        .bot { color: #333; }
-        .user { color: #007bff; }
-        #welcome-container, #chat-container, #store-container, #stock-container { border: 2px solid #4682B4; padding: 20px; background-color: #fff; width: 300px; margin: 20px auto; text-align: center; }
-        input { padding: 5px; width: 80%; margin: 5px 0; border: 1px solid #4682B4; }
-        button { padding: 5px 10px; margin: 5px; cursor: pointer; background-color: #E6F0FA; border: 1px solid #4682B4; }
-        #stock-list { max-height: 150px; overflow-y: auto; margin-top: 10px; border: 1px solid #4682B4; }
+        body {
+            margin: 0;
+            padding: 10px;
+            font-family: sans-serif;
+            background-color: #E6F0FA;
+            color: #333;
+            overflow-x: hidden;
+            font-size: 14px;
+        }
+        #app-container {
+            max-width: 100%;
+            width: 100%;
+            margin: 0 auto;
+            text-align: center;
+            box-sizing: border-box;
+            min-height: 100vh;
+            position: relative;
+            padding-bottom: 60px;
+        }
+        h2 {
+            color: #4682B4;
+            margin: 10px 0;
+        }
+        h4 {
+            color: #4682B4;
+            margin: 5px 0;
+        }
+        .section {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #4682B4;
+            border-radius: 3px;
+            background-color: #fff;
+        }
+        .hidden {
+            display: none;
+        }
+        input, textarea, select {
+            padding: 5px;
+            width: 90%;
+            margin: 5px 0;
+            border: 1px solid #4682B4;
+            border-radius: 3px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        button {
+            padding: 5px 10px;
+            margin: 5px;
+            cursor: pointer;
+            background-color: #E6F0FA;
+            border: 1px solid #4682B4;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #4682B4;
+            color: #fff;
+        }
+        .error {
+            color: red;
+            font-size: 12px;
+            margin: 5px 0;
+        }
+        #lojistas-list {
+            width: 30%;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #4682B4;
+            padding: 5px;
+            background-color: #f9f9f9;
+            display: inline-block;
+            vertical-align: top;
+        }
+        #catalogo-panel {
+            width: 65%;
+            max-height: 300px;
+            overflow-y: auto;
+            overflow-x: auto;
+            border: 1px solid #4682B4;
+            padding: 5px;
+            background-color: #f9f9f9;
+            display: inline-block;
+            vertical-align: top;
+        }
+        .produto-item {
+            display: block;
+            padding: 5px;
+            margin: 2px 0;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            white-space: nowrap;
+            min-width: 350px;
+            text-align: left;
+        }
+        .loja-item {
+            display: block;
+            padding: 5px;
+            margin: 2px 0;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            cursor: pointer;
+            text-align: left;
+        }
+        #estoque-panel, #caixa-info {
+            width: 65%;
+            max-height: 300px;
+            overflow-x: auto;
+            overflow-y: auto;
+            border: 1px solid #4682B4;
+            padding: 5px;
+            background-color: #f9f9f9;
+            display: inline-block;
+        }
+        #chat-cliente, #chat-caixa {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #4682B4;
+            padding: 10px;
+            margin: 5px 0;
+            background-color: #f0f0f0;
+        }
+        .chat-message {
+            display: flex;
+            flex-direction: column;
+            margin: 5px 0;
+            max-width: 70%;
+        }
+        .chat-message.sent {
+            align-self: flex-end;
+            background-color: #006633; /* Verde Pantone 356 pra quem envia */
+            color: #fff;
+            border-radius: 10px 10px 0 10px;
+            padding: 8px;
+        }
+        .chat-message.received {
+            align-self: flex-start;
+            background-color: #FFC107; /* Amarelo da seleção pra quem recebe */
+            color: #333;
+            border-radius: 10px 10px 10px 0;
+            padding: 8px;
+        }
+        .chat-message .timestamp {
+            font-size: 10px;
+            color: #ccc; /* Cor clara pro timestamp */
+            margin-top: 2px;
+        }
+        #formas-pagamento {
+            position: fixed;
+            bottom: 50px;
+            left: 10px;
+            right: 10px;
+            background-color: #fff;
+            border: 1px solid #4682B4;
+            padding: 5px;
+            font-size: 12px;
+            z-index: 10;
+        }
+        .voltar-btn {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            z-index: 10;
+        }
+        audio {
+            width: 100%;
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body>
-    <div id="welcome-container">
-        <h2>Bem-vindo ao MamãoChat</h2>
-        <button onclick="showChat()">Entrar como Lojista</button>
-    </div>
-    <div id="chat-container" class="hidden">
-        <div id="messages"></div>
-        <div id="categories">
-            <h3>Lojas</h3>
-            <button onclick="selectStore('joao')">Mercado João</button>
-            <button onclick="selectStore('pedro')">Bar do Pedro</button>
+    <div id="app-container">
+        <h2>Mamão Chat</h2>
+
+        <!-- Tela Inicial -->
+        <div id="inicio-section" class="section">
+            <button onclick="showSection('cadastro-cliente')">Cadastro Cliente</button>
+            <button onclick="showSection('cadastro-lojista')">Cadastro Lojista</button>
         </div>
-        <input type="text" id="chat-input" placeholder="Digite aqui...">
-        <button onclick="sendMessage()">Enviar</button>
-    </div>
-    <div id="store-container" class="hidden">
-        <div id="store-messages"></div>
-        <div id="product-list"><h4>Produtos</h4></div>
-        <div id="cart"><h4>Carrinho</h4><div id="cart-items"></div></div>
-        <input type="text" id="store-input" placeholder="Digite o produto...">
-        <button onclick="sendStoreMessage()">Enviar</button>
-    </div>
-    <div id="stock-container" class="hidden">
-        <h2>Controle de Estoque</h2>
-        <button onclick="showAddStock()">Adicionar Produto</button>
-        <button onclick="showStock()">Ver Estoque</button>
-        <div id="stock-list"></div>
+
+        <!-- Cadastro Cliente -->
+        <div id="cadastro-cliente" class="section hidden">
+            <h4>Cadastro Cliente</h4>
+            <input id="cliente-nome" placeholder="Nome"><br>
+            <input id="cliente-endereco" placeholder="Endereço"><br>
+            <input id="cliente-telefone" type="tel" placeholder="Telefone/WhatsApp"><br>
+            <input id="cliente-cep" placeholder="CEP"><br>
+            <input id="cliente-senha" type="password" maxlength="6" placeholder="Senha (6 dígitos)"><br>
+            <button onclick="cadastrarCliente()">Cadastrar</button>
+            <h4>Login</h4>
+            <input id="login-cliente-nome" placeholder="Nome"><br>
+            <input id="login-cliente-senha" type="password" maxlength="6" placeholder="Senha"><br>
+            <button onclick="loginCliente()">Entrar</button>
+            <div id="cliente-error" class="error"></div>
+            <div class="voltar-btn"><button onclick="showSection('inicio-section')">Voltar</button></div>
+        </div>
+
+        <!-- Painel Cliente -->
+        <div id="cliente-painel" class="section hidden">
+            <h4>Catálogo</h4>
+            <div style="display: flex;">
+                <div id="lojistas-list"></div>
+                <div id="catalogo-panel"></div>
+            </div>
+            <input id="produto-nome" placeholder="Digite o produto (ex: Café)"><br>
+            <input id="produto-quantidade" type="number" min="1" placeholder="Quantidade"><br>
+            <button onclick="adicionarAoCarrinho()">Adicionar</button>
+            <button onclick="removerDoCarrinho()">Remover do Carrinho</button>
+            <div>Carrinho: R$<span id="carrinho-total">0.00</span></div>
+            <button onclick="esvaziarCarrinho()">Esvaziar Carrinho</button>
+            <button onclick="confirmarCompra()">Confirmar Compra</button>
+            <div id="chat-cliente"></div>
+            <textarea id="mensagem-cliente" placeholder="Mensagem para o lojista..."></textarea><br>
+            <button onclick="enviarMensagemCliente()">Enviar Texto</button>
+            <button id="gravar-cliente" onclick="toggleGravacaoCliente()">Gravar Áudio</button>
+            <button onclick="encerrarChat()">Encerrar Chat</button>
+            <button onclick="logoutCliente()">Sair</button>
+            <div id="formas-pagamento">Formas de pagamento: A definir pelo lojista</div>
+            <div class="voltar-btn"><button onclick="showSection('cadastro-cliente')">Voltar</button></div>
+        </div>
+
+        <!-- Cadastro Lojista -->
+        <div id="cadastro-lojista" class="section hidden">
+            <h4>Cadastro Lojista</h4>
+            <input id="lojista-nome" placeholder="Nome da Loja"><br>
+            <input id="lojista-endereco" placeholder="Endereço"><br>
+            <input id="lojista-telefone" type="tel" placeholder="Telefone/WhatsApp"><br>
+            <input id="lojista-cep" placeholder="CEP"><br>
+            <input id="lojista-senha" type="password" maxlength="6" placeholder="Senha (6 dígitos)"><br>
+            <button onclick="cadastrarLojista()">Cadastrar</button>
+            <h4>Login</h4>
+            <input id="login-lojista-nome" placeholder="Nome da Loja"><br>
+            <input id="login-lojista-senha" type="password" maxlength="6" placeholder="Senha"><br>
+            <button onclick="loginLojista()">Entrar</button>
+            <div id="lojista-error" class="error"></div>
+            <div class="voltar-btn"><button onclick="showSection('inicio-section')">Voltar</button></div>
+        </div>
+
+        <!-- Painel Caixa Lojista -->
+        <div id="caixa-section" class="section hidden">
+            <h4>Caixa: <span id="nome-loja"></span></h4>
+            <div id="caixa-tabela">
+                <button onclick="mostrarVendasRealizadas()">Vendas Realizadas</button>
+                <button onclick="mostrarCatalogo()">Catálogo</button>
+                <button onclick="mostrarRelatorioDia()">Vendas do Dia</button>
+                <button onclick="mostrarRelatorioMes()">Vendas do Mês</button>
+                <button onclick="showSection('estoque-section')">Gerenciar Estoque</button>
+                <div id="caixa-info"></div>
+            </div>
+            <h4>Chat com Clientes</h4>
+            <select id="clientes-loja" onchange="atualizarChatCaixa()">
+                <option value="">Selecione um cliente</option>
+            </select>
+            <div id="chat-caixa"></div>
+            <textarea id="mensagem-caixa" placeholder="Digite sua resposta..."></textarea><br>
+            <button onclick="enviarMensagemCaixa()">Enviar Texto</button>
+            <button id="gravar-caixa" onclick="toggleGravacaoCaixa()">Gravar Áudio</button>
+            <textarea id="formas-pagamento-input" placeholder="Formas de pagamento (ex: Pix, Dinheiro)"></textarea><br>
+            <button onclick="atualizarFormasPagamento()">Atualizar Formas de Pagamento</button>
+            <button onclick="logoutLojista()">Sair</button>
+            <div class="voltar-btn"><button onclick="showSection('cadastro-lojista')">Voltar</button></div>
+        </div>
+
+        <!-- Estoque Lojista -->
+        <div id="estoque-section" class="section hidden">
+            <h4>Estoque: <span id="estoque-nome-loja"></span></h4>
+            <div id="estoque-panel"></div>
+            <input id="estoque-codigo" placeholder="Código do Produto"><br>
+            <input id="estoque-nome-produto" placeholder="Nome do Produto"><br>
+            <input id="estoque-tipo" placeholder="Tipo (ex: mineral, arábica)"><br>
+            <input id="estoque-volume" placeholder="Volume (ex: 500ml, 1kg)"><br>
+            <input id="estoque-quantidade" type="number" min="0" placeholder="Quantidade"><br>
+            <input id="estoque-valor" type="number" step="0.01" placeholder="Valor (R$)"><br>
+            <button onclick="adicionarProdutoEstoque()">Adicionar Produto</button>
+            <button onclick="removerProdutoEstoque()">Remover Produto</button>
+            <button onclick="showSection('caixa-section')">Voltar ao Caixa</button>
+            <div class="voltar-btn"><button onclick="showSection('cadastro-lojista')">Voltar</button></div>
+        </div>
     </div>
 
     <script>
-        const welcomeContainer = document.getElementById("welcome-container");
-        const chatContainer = document.getElementById("chat-container");
-        const storeContainer = document.getElementById("store-container");
-        const stockContainer = document.getElementById("stock-container");
-        const messagesDiv = document.getElementById("messages");
-        const storeMessagesDiv = document.getElementById("store-messages");
-        const productList = document.getElementById("product-list");
-        const cartItems = document.getElementById("cart-items");
-        const stockList = document.getElementById("stock-list");
-        const chatInput = document.getElementById("chat-input");
-        const storeInput = document.getElementById("store-input");
-
-        // Dados iniciais (lojas e estoque)
-        let stores = {
-            "joao": { 
-                storeName: "Mercado João", 
-                products: [
-                    { name: "Sabão", price: "2.00", stock: 10 },
-                    { name: "Arroz", price: "25.00", stock: 20 }
-                ]
-            },
-            "pedro": { 
-                storeName: "Bar do Pedro", 
-                products: [
-                    { name: "Cerveja 1L", price: "3.00", stock: 15 },
-                    { name: "Pinga", price: "5.00", stock: 8 }
-                ]
+        let currentCliente = null;
+        let currentLoja = null;
+        let lojaSelecionada = null;
+        let carrinho = [];
+        let conversas = {};
+        let clientes = {};
+        let lojistas = {
+            "termux": {
+                password: CryptoJS.MD5("654321").toString(),
+                storeName: "Termux",
+                endereco: "Rua Teste, 123",
+                telefone: "11987654321",
+                cep: "12345-678",
+                saldo: 0,
+                formasPagamento: "Pix, Dinheiro",
+                estoque: [
+                    { codigo: "cd001", nomeProduto: "Água", tipo: "mineral", volume: "500ml", quantidade: 10, valor: 2.50 },
+                    { codigo: "cd201", nomeProduto: "Café", tipo: "arábica", volume: "500g", quantidade: 5, valor: 26.50 },
+                    { codigo: "cd202", nomeProduto: "Açúcar", tipo: "cristal", volume: "1kg", quantidade: 15, valor: 5.00 },
+                    { codigo: "cd203", nomeProduto: "Arroz", tipo: "branco", volume: "5kg", quantidade: 8, valor: 20.00 },
+                    { codigo: "cd204", nomeProduto: "Óleo", tipo: "soja", volume: "900ml", quantidade: 12, valor: 12.49 }
+                ],
+                vendas: [],
+                clientesAtivos: []
             }
         };
-        let currentStore = null;
-        let cart = [];
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let isRecordingCliente = false;
+        let isRecordingCaixa = false;
 
-        // Funções do MamãoChat
-        function showChat() {
-            welcomeContainer.classList.add("hidden");
-            chatContainer.classList.remove("hidden");
-            addMessage("Escolha uma loja!", "bot");
-        }
+        const SECRET_KEY = "MamaoChat2025";
 
-        function selectStore(store) {
-            currentStore = store;
-            chatContainer.classList.add("hidden");
-            storeContainer.classList.remove("hidden");
-            addStoreMessage(`Bem-vindo à ${stores[store].storeName}! Digite o produto ou 'estoque' para gerenciar.`, "bot");
-            updateProductList();
-        }
-
-        function addMessage(text, sender) {
-            const message = document.createElement("div");
-            message.classList.add(sender);
-            message.textContent = text;
-            messagesDiv.appendChild(message);
-        }
-
-        function addStoreMessage(text, sender) {
-            const message = document.createElement("div");
-            message.classList.add(sender);
-            message.textContent = text;
-            storeMessagesDiv.appendChild(message);
-        }
-
-        function updateProductList() {
-            productList.innerHTML = "<h4>Produtos</h4>";
-            stores[currentStore].products.forEach(p => {
-                productList.innerHTML += `<div>${p.name} - R$${p.price} (Estoque: ${p.stock})</div>`;
-            });
-        }
-
-        function sendMessage() {
-            const text = chatInput.value.trim().toLowerCase();
-            if (text) {
-                addMessage(text, "user");
-                chatInput.value = "";
+        function encryptData(data) {
+            try {
+                return CryptoJS.AES.encrypt(JSON.stringify(data), SECRET_KEY).toString();
+            } catch (e) {
+                console.error("Erro ao criptografar:", e);
+                return JSON.stringify(data);
             }
         }
 
-        function sendStoreMessage() {
-            const text = storeInput.value.trim().toLowerCase();
-            if (text === "estoque") {
-                storeContainer.classList.add("hidden");
-                stockContainer.classList.remove("hidden");
-                showStock();
-            } else if (text === "pagar" && cart.length) {
-                let total = cart.reduce((sum, p) => sum + parseFloat(p.price) * p.quantity, 0).toFixed(2);
-                cart.forEach(item => updateStock(item.name, -item.quantity));
-                addStoreMessage(`Compra de R$${total} confirmada! Estoque atualizado.`, "bot");
-                cart = [];
-                updateCart();
-                updateProductList();
+        function decryptData(encryptedData) {
+            try {
+                const bytes = CryptoJS.AES.decrypt(encryptedData, SECRET_KEY);
+                return JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+            } catch (e) {
+                console.error("Erro ao descriptografar:", e);
+                return null;
+            }
+        }
+
+        const storedClientes = localStorage.getItem("clientesMamao");
+        if (storedClientes) clientes = decryptData(storedClientes) || {};
+        const storedLojistas = localStorage.getItem("lojistasMamao");
+        if (storedLojistas) lojistas = decryptData(storedLojistas) || lojistas;
+        const storedConversas = localStorage.getItem("conversasMamao");
+        if (storedConversas) conversas = decryptData(storedConversas) || {};
+
+        function showSection(sectionId) {
+            document.querySelectorAll(".section").forEach(s => s.classList.add("hidden"));
+            document.getElementById(sectionId).classList.remove("hidden");
+        }
+
+        function cadastrarCliente() {
+            const nome = document.getElementById("cliente-nome").value.trim();
+            const endereco = document.getElementById("cliente-endereco").value.trim();
+            const telefone = document.getElementById("cliente-telefone").value.trim();
+            const cep = document.getElementById("cliente-cep").value.trim();
+            const senha = document.getElementById("cliente-senha").value.trim();
+            const errorDiv = document.getElementById("cliente-error");
+            if (!nome || !endereco || !telefone || !cep || senha.length !== 6 || !/^\d{6}$/.test(senha)) {
+                errorDiv.textContent = "Preencha todos os campos! Senha: 6 números.";
+                return;
+            }
+            clientes[nome] = {
+                senha: CryptoJS.MD5(senha).toString(),
+                endereco,
+                telefone,
+                cep
+            };
+            localStorage.setItem("clientesMamao", encryptData(clientes));
+            errorDiv.textContent = "Cadastro realizado!";
+            document.getElementById("cliente-nome").value = "";
+            document.getElementById("cliente-endereco").value = "";
+            document.getElementById("cliente-telefone").value = "";
+            document.getElementById("cliente-cep").value = "";
+            document.getElementById("cliente-senha").value = "";
+        }
+
+        function loginCliente() {
+            const nome = document.getElementById("login-cliente-nome").value.trim();
+            const senha = document.getElementById("login-cliente-senha").value.trim();
+            const errorDiv = document.getElementById("cliente-error");
+            if (clientes[nome] && clientes[nome].senha === CryptoJS.MD5(senha).toString()) {
+                currentCliente = nome;
+                showSection("cliente-painel");
+                atualizarCatalogo();
             } else {
-                let product = stores[currentStore].products.find(p => p.name.toLowerCase() === text);
-                if (product && product.stock > 0) {
-                    cart.push({ name: product.name, price: product.price, quantity: 1 });
-                    addStoreMessage(`${product.name} adicionado ao carrinho! Digite 'pagar' para finalizar.`, "bot");
-                    updateCart();
-                } else {
-                    addStoreMessage("Produto não encontrado ou sem estoque!", "bot");
-                }
-            }
-            storeInput.value = "";
-        }
-
-        function updateCart() {
-            cartItems.innerHTML = cart.map(p => `${p.name} - R$${p.price} (x${p.quantity})`).join("<br>");
-        }
-
-        // Funções de Estoque
-        function updateStock(productName, quantity) {
-            let product = stores[currentStore].products.find(p => p.name.toLowerCase() === productName.toLowerCase());
-            if (product) {
-                product.stock += quantity;
-                if (product.stock < 5) {
-                    addStoreMessage(`ALERTA: Estoque de ${product.name} está baixo (${product.stock})!`, "bot");
-                }
+                errorDiv.textContent = "Nome ou senha incorretos!";
             }
         }
 
-        function showAddStock() {
-            stockList.innerHTML = `
-                <input id="stock-name" placeholder="Nome do produto"><br>
-                <input id="stock-quantity" placeholder="Quantidade a adicionar" type="number"><br>
-                <button onclick="addStock()">Adicionar</button>
-            `;
+        function logoutCliente() {
+            currentCliente = null;
+            lojaSelecionada = null;
+            carrinho = [];
+            showSection("cadastro-cliente");
         }
 
-        function addStock() {
-            const name = document.getElementById("stock-name").value.trim();
-            const quantity = parseInt(document.getElementById("stock-quantity").value);
-            if (name && quantity > 0) {
-                let product = stores[currentStore].products.find(p => p.name.toLowerCase() === name.toLowerCase());
-                if (product) {
-                    updateStock(name, quantity);
-                } else {
-                    stores[currentStore].products.push({ name: name, price: "0.00", stock: quantity });
-                }
-                showStock();
-            }
-        }
-
-        function showStock() {
-            stockList.innerHTML = "<h4>Estoque Atual</h4>";
-            stores[currentStore].products.forEach(p => {
-                stockList.innerHTML += `<div>${p.name}: ${p.stock} unidades</div>`;
+        function atualizarCatalogo() {
+            const lojistasList = document.getElementById("lojistas-list");
+            const catalogoPanel = document.getElementById("catalogo-panel");
+            lojistasList.innerHTML = "";
+            catalogoPanel.innerHTML = "";
+            Object.keys(lojistas).forEach(nome => {
+                const div = document.createElement("div");
+                div.className = "loja-item";
+                div.textContent = lojistas[nome].storeName;
+                div.onclick = () => {
+                    lojaSelecionada = nome;
+                    atualizarProdutos();
+                    atualizarChatCliente();
+                    document.getElementById("formas-pagamento").textContent = `Formas de pagamento: ${lojistas[nome].formasPagamento}`;
+                };
+                lojistasList.appendChild(div);
             });
+            if (lojaSelecionada) atualizarProdutos();
+        }
+
+        function atualizarProdutos() {
+            const catalogoPanel = document.getElementById("catalogo-panel");
+            catalogoPanel.innerHTML = "";
+            lojistas[lojaSelecionada].estoque.forEach(produto => {
+                const div = document.createElement("div");
+                div.className = "produto-item";
+                div.textContent = `${produto.nomeProduto} ${produto.tipo} ${produto.volume} R$${produto.valor.toFixed(2)} ${produto.codigo} (Qtd: ${produto.quantidade})`;
+                catalogoPanel.appendChild(div);
+            });
+        }
+
+        function adicionarAoCarrinho() {
+            if (!lojaSelecionada) {
+                alert("Selecione um lojista primeiro!");
+                return;
+            }
+            const nome = document.getElementById("produto-nome").value.trim();
+            const qtd = parseInt(document.getElementById("produto-quantidade").value) || 1;
+            const produto = lojistas[lojaSelecionada].estoque.find(p => p.nomeProduto.toLowerCase() === nome.toLowerCase());
+            if (!produto || produto.quantidade < qtd) {
+                alert("Produto não disponível ou estoque insuficiente!");
+                return;
+            }
+            const itemNoCarrinho = carrinho.find(i => i.codigo === produto.codigo);
+            if (itemNoCarrinho) {
+                itemNoCarrinho.quantidade += qtd;
+            } else {
+                carrinho.push({ ...produto, quantidade: qtd });
+            }
+            atualizarCarrinho();
+        }
+
+        function removerDoCarrinho() {
+            if (carrinho.length === 0) {
+                alert("Carrinho vazio!");
+                return;
+            }
+            const nome = document.getElementById("produto-nome").value.trim();
+            const qtd = parseInt(document.getElementById("produto-quantidade").value) || 1;
+            if (!nome) {
+                alert("Digite o nome do produto a remover!");
+                return;
+            }
+            const itemIndex = carrinho.findIndex(i => i.nomeProduto.toLowerCase() === nome.toLowerCase());
+            if (itemIndex === -1) {
+                alert("Produto não encontrado no carrinho!");
+                return;
+            }
+            if (carrinho[itemIndex].quantidade <= qtd) {
+                carrinho.splice(itemIndex, 1);
+            } else {
+                carrinho[itemIndex].quantidade -= qtd;
+            }
+            atualizarCarrinho();
+            alert(`Removido ${qtd} ${nome} do carrinho!`);
+        }
+
+        function esvaziarCarrinho() {
+            carrinho = [];
+            atualizarCarrinho();
+        }
+
+        function atualizarCarrinho() {
+            const total = carrinho.reduce((acc, item) => acc + item.valor * item.quantidade, 0);
+            document.getElementById("carrinho-total").textContent = total.toFixed(2);
+        }
+
+        function confirmarCompra() {
+            if (carrinho.length === 0) {
+                alert("Carrinho vazio!");
+                return;
+            }
+            const total = carrinho.reduce((acc, item) => acc + item.valor * item.quantidade, 0);
+            const mensagem = prompt(`Confirmar compra de R$${total.toFixed(2)}? Digite instruções de entrega:`);
+            if (mensagem !== null) {
+                let vendaValida = true;
+                carrinho.forEach(item => {
+                    const produto = lojistas[lojaSelecionada].estoque.find(p => p.codigo === item.codigo);
+                    if (produto.quantidade < item.quantidade) vendaValida = false;
+                    else produto.quantidade -= item.quantidade;
+                });
+                if (vendaValida) {
+                    lojistas[lojaSelecionada].saldo += total;
+                    lojistas[lojaSelecionada].vendas.push({
+                        cliente: currentCliente,
+                        itens: [...carrinho],
+                        total,
+                        timestamp: new Date().toLocaleString(),
+                        detalhes: mensagem || "Sem detalhes"
+                    });
+                    if (!conversas[lojaSelecionada]) conversas[lojaSelecionada] = {};
+                    if (!conversas[lojaSelecionada][currentCliente]) conversas[lojaSelecionada][currentCliente] = [];
+                    conversas[lojaSelecionada][currentCliente].push({
+                        remetente: currentCliente,
+                        texto: `Compra R$${total.toFixed(2)} - ${mensagem || "Sem detalhes"}`,
+                        timestamp: new Date().toLocaleString()
+                    });
+                    if (!lojistas[lojaSelecionada].clientesAtivos.includes(currentCliente)) {
+                        lojistas[lojaSelecionada].clientesAtivos.push(currentCliente);
+                    }
+                    localStorage.setItem("lojistasMamao", encryptData(lojistas));
+                    localStorage.setItem("conversasMamao", encryptData(conversas));
+                    alert("Compra confirmada!");
+                    carrinho = [];
+                    atualizarCarrinho();
+                    atualizarChatCliente();
+                    atualizarProdutos();
+                } else {
+                    alert("Estoque insuficiente!");
+                }
+            }
+        }
+
+        function enviarMensagemCliente() {
+            const mensagem = document.getElementById("mensagem-cliente").value.trim();
+            if (!lojaSelecionada || !mensagem) {
+                alert("Selecione uma loja e digite uma mensagem!");
+                return;
+            }
+            if (!conversas[lojaSelecionada]) conversas[lojaSelecionada] = {};
+            if (!conversas[lojaSelecionada][currentCliente]) conversas[lojaSelecionada][currentCliente] = [];
+            conversas[lojaSelecionada][currentCliente].push({
+                remetente: currentCliente,
+                texto: mensagem,
+                timestamp: new Date().toLocaleString()
+            });
+            if (!lojistas[lojaSelecionada].clientesAtivos.includes(currentCliente)) {
+                lojistas[lojaSelecionada].clientesAtivos.push(currentCliente);
+            }
+            localStorage.setItem("conversasMamao", encryptData(conversas));
+            localStorage.setItem("lojistasMamao", encryptData(lojistas));
+            document.getElementById("mensagem-cliente").value = "";
+            atualizarChatCliente();
+        }
+
+        function toggleGravacaoCliente() {
+            if (!lojaSelecionada) {
+                alert("Selecione uma loja primeiro!");
+                return;
+            }
+            if (!isRecordingCliente) {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    alert("Seu navegador não suporta gravação de áudio!");
+                    return;
+                }
+                navigator.mediaDevices.getUserMedia({ audio: true })
+                    .then(stream => {
+                        mediaRecorder = new MediaRecorder(stream);
+                        audioChunks = [];
+                        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                        mediaRecorder.onstop = enviarAudioCliente;
+                        mediaRecorder.start();
+                        isRecordingCliente = true;
+                        document.getElementById("gravar-cliente").textContent = "Parar Gravação";
+                    })
+                    .catch(err => {
+                        alert("Erro ao acessar o microfone. Certifique-se de dar permissão ao Termux e ao navegador! Detalhes: " + err);
+                    });
+            } else {
+                mediaRecorder.stop();
+                mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                isRecordingCliente = false;
+                document.getElementById("gravar-cliente").textContent = "Gravar Áudio";
+            }
+        }
+
+        function enviarAudioCliente() {
+            const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+            const reader = new FileReader();
+            reader.onload = () => {
+                const audioBase64 = reader.result;
+                if (!conversas[lojaSelecionada]) conversas[lojaSelecionada] = {};
+                if (!conversas[lojaSelecionada][currentCliente]) conversas[lojaSelecionada][currentCliente] = [];
+                conversas[lojaSelecionada][currentCliente].push({
+                    remetente: currentCliente,
+                    audio: audioBase64,
+                    timestamp: new Date().toLocaleString()
+                });
+                if (!lojistas[lojaSelecionada].clientesAtivos.includes(currentCliente)) {
+                    lojistas[lojaSelecionada].clientesAtivos.push(currentCliente);
+                }
+                localStorage.setItem("conversasMamao", encryptData(conversas));
+                localStorage.setItem("lojistasMamao", encryptData(lojistas));
+                atualizarChatCliente();
+            };
+            reader.readAsDataURL(audioBlob);
+        }
+
+        function atualizarChatCliente() {
+            const chatCliente = document.getElementById("chat-cliente");
+            chatCliente.innerHTML = lojaSelecionada ? `<strong>Chat com ${lojistas[lojaSelecionada].storeName}:</strong><br>` : "Selecione uma loja.";
+            if (lojaSelecionada && conversas[lojaSelecionada] && conversas[lojaSelecionada][currentCliente]) {
+                conversas[lojaSelecionada][currentCliente].forEach(msg => {
+                    const div = document.createElement("div");
+                    // Se o remetente é o cliente atual, é "sent" (verde), senão é "received" (amarelo)
+                    div.className = `chat-message ${msg.remetente === currentCliente ? 'sent' : 'received'}`;
+                    if (msg.texto) {
+                        div.innerHTML = `${msg.texto}<span class="timestamp">${msg.timestamp}</span>`;
+                    } else if (msg.audio) {
+                        const audio = document.createElement("audio");
+                        audio.controls = true;
+                        audio.src = msg.audio;
+                        div.innerHTML = `<span class="timestamp">${msg.timestamp}</span>`;
+                        div.appendChild(audio);
+                    }
+                    chatCliente.appendChild(div);
+                });
+                chatCliente.scrollTop = chatCliente.scrollHeight;
+            }
+        }
+
+        function encerrarChat() {
+            if (lojaSelecionada && conversas[lojaSelecionada] && conversas[lojaSelecionada][currentCliente]) {
+                delete conversas[lojaSelecionada][currentCliente];
+                localStorage.setItem("conversasMamao", encryptData(conversas));
+                atualizarChatCliente();
+            }
+        }
+
+        function cadastrarLojista() {
+            const nome = document.getElementById("lojista-nome").value.trim();
+            const endereco = document.getElementById("lojista-endereco").value.trim();
+            const telefone = document.getElementById("lojista-telefone").value.trim();
+            const cep = document.getElementById("lojista-cep").value.trim();
+            const senha = document.getElementById("lojista-senha").value.trim();
+            const errorDiv = document.getElementById("lojista-error");
+            if (!nome || !endereco || !telefone || !cep || senha.length !== 6 || !/^\d{6}$/.test(senha)) {
+                errorDiv.textContent = "Preencha todos os campos! Senha: 6 números.";
+                return;
+            }
+            lojistas[nome.toLowerCase()] = {
+                password: CryptoJS.MD5(senha).toString(),
+                storeName: nome,
+                endereco,
+                telefone,
+                cep,
+                saldo: 0,
+                formasPagamento: "A definir",
+                estoque: [],
+                vendas: [],
+                clientesAtivos: []
+            };
+            localStorage.setItem("lojistasMamao", encryptData(lojistas));
+            errorDiv.textContent = "Cadastro realizado!";
+            document.getElementById("lojista-nome").value = "";
+            document.getElementById("lojista-endereco").value = "";
+            document.getElementById("lojista-telefone").value = "";
+            document.getElementById("lojista-cep").value = "";
+            document.getElementById("lojista-senha").value = "";
+        }
+
+        function loginLojista() {
+            const nome = document.getElementById("login-lojista-nome").value.trim().toLowerCase();
+            const senha = document.getElementById("login-lojista-senha").value.trim();
+            const errorDiv = document.getElementById("lojista-error");
+            if (lojistas[nome] && lojistas[nome].password === CryptoJS.MD5(senha).toString()) {
+                currentLoja = nome;
+                showSection("caixa-section");
+                atualizarPainelCaixa();
+            } else {
+                errorDiv.textContent = "Nome ou senha incorretos!";
+            }
+        }
+
+        function logoutLojista() {
+            currentLoja = null;
+            showSection("cadastro-lojista");
+        }
+
+        function atualizarPainelCaixa() {
+            const loja = lojistas[currentLoja];
+            document.getElementById("nome-loja").textContent = loja.storeName;
+            document.getElementById("estoque-nome-loja").textContent = loja.storeName;
+            const clientesSelect = document.getElementById("clientes-loja");
+            clientesSelect.innerHTML = "<option value=''>Selecione um cliente</option>";
+            loja.clientesAtivos.forEach(cliente => {
+                const option = document.createElement("option");
+                option.value = cliente;
+                option.textContent = cliente;
+                clientesSelect.appendChild(option);
+            });
+            document.getElementById("formas-pagamento-input").value = loja.formasPagamento;
+            atualizarChatCaixa();
+        }
+
+        function mostrarVendasRealizadas() {
+            const caixaInfo = document.getElementById("caixa-info");
+            caixaInfo.innerHTML = "<strong>Vendas Realizadas:</strong><br>";
+            lojistas[currentLoja].vendas.forEach(venda => {
+                const div = document.createElement("div");
+                div.textContent = `${venda.cliente}: R$${venda.total.toFixed(2)} - ${venda.timestamp} - ${venda.detalhes}`;
+                caixaInfo.appendChild(div);
+            });
+        }
+
+        function mostrarCatalogo() {
+            const caixaInfo = document.getElementById("caixa-info");
+            caixaInfo.innerHTML = "<strong>Catálogo:</strong><br>";
+            lojistas[currentLoja].estoque.forEach(produto => {
+                const div = document.createElement("div");
+                div.textContent = `${produto.nomeProduto} ${produto.tipo} ${produto.volume} R$${produto.valor.toFixed(2)} ${produto.codigo} (Qtd: ${produto.quantidade})`;
+                caixaInfo.appendChild(div);
+            });
+        }
+
+        function mostrarRelatorioDia() {
+            const caixaInfo = document.getElementById("caixa-info");
+            caixaInfo.innerHTML = "<strong>Vendas do Dia:</strong><br>";
+            const hoje = new Date().toLocaleDateString();
+            const vendasDia = lojistas[currentLoja].vendas.filter(v => v.timestamp.includes(hoje));
+            const totalDia = vendasDia.reduce((acc, v) => acc + v.total, 0);
+            vendasDia.forEach(venda => {
+                const div = document.createElement("div");
+                div.textContent = `${venda.cliente}: R$${venda.total.toFixed(2)} - ${venda.detalhes}`;
+                caixaInfo.appendChild(div);
+            });
+            caixaInfo.innerHTML += `<br>Total do dia: R$${totalDia.toFixed(2)}`;
+        }
+
+        function mostrarRelatorioMes() {
+            const caixaInfo = document.getElementById("caixa-info");
+            caixaInfo.innerHTML = "<strong>Vendas do Mês:</strong><br>";
+            const mesAtual = new Date().getMonth();
+            const vendasMes = lojistas[currentLoja].vendas.filter(v => new Date(v.timestamp).getMonth() === mesAtual);
+            const totalMes = vendasMes.reduce((acc, v) => acc + v.total, 0);
+            vendasMes.forEach(venda => {
+                const div = document.createElement("div");
+                div.textContent = `${venda.cliente}: R$${venda.total.toFixed(2)} - ${venda.timestamp}`;
+                caixaInfo.appendChild(div);
+            });
+            caixaInfo.innerHTML += `<br>Total do mês: R$${totalMes.toFixed(2)}`;
+        }
+
+        function adicionarProdutoEstoque() {
+            const codigo = document.getElementById("estoque-codigo").value.trim();
+            const nomeProduto = document.getElementById("estoque-nome-produto").value.trim();
+            const tipo = document.getElementById("estoque-tipo").value.trim();
+            const volume = document.getElementById("estoque-volume").value.trim();
+            const quantidade = parseInt(document.getElementById("estoque-quantidade").value) || 0;
+            const valor = parseFloat(document.getElementById("estoque-valor").value) || 0;
+            if (!codigo || !nomeProduto || !tipo || !volume || quantidade < 0 || valor <= 0) {
+                alert("Preencha todos os campos corretamente!");
+                return;
+            }
+            const produtoExistente = lojistas[currentLoja].estoque.find(p => p.codigo === codigo);
+            if (produtoExistente) {
+                produtoExistente.quantidade += quantidade;
+            } else {
+                lojistas[currentLoja].estoque.push({ codigo, nomeProduto, tipo, volume, quantidade, valor });
+            }
+            localStorage.setItem("lojistasMamao", encryptData(lojistas));
+            atualizarEstoque();
+            document.getElementById("estoque-codigo").value = "";
+            document.getElementById("estoque-nome-produto").value = "";
+            document.getElementById("estoque-tipo").value = "";
+            document.getElementById("estoque-volume").value = "";
+            document.getElementById("estoque-quantidade").value = "";
+            document.getElementById("estoque-valor").value = "";
+        }
+
+        function removerProdutoEstoque() {
+            const codigo = document.getElementById("estoque-codigo").value.trim();
+            const nomeProduto = document.getElementById("estoque-nome-produto").value.trim();
+            const tipo = document.getElementById("estoque-tipo").value.trim();
+            const volume = document.getElementById("estoque-volume").value.trim();
+            const quantidade = parseInt(document.getElementById("estoque-quantidade").value) || 0;
+            
+            if (!codigo || !nomeProduto || !tipo || !volume || quantidade <= 0) {
+                alert("Preencha todos os campos corretamente para remover!");
+                return;
+            }
+            
+            const produtoIndex = lojistas[currentLoja].estoque.findIndex(p => 
+                p.codigo === codigo && 
+                p.nomeProduto.toLowerCase() === nomeProduto.toLowerCase() && 
+                p.tipo.toLowerCase() === tipo.toLowerCase() && 
+                p.volume.toLowerCase() === volume.toLowerCase()
+            );
+            
+            if (produtoIndex === -1) {
+                alert("Produto não encontrado no estoque!");
+                return;
+            }
+            
+            if (lojistas[currentLoja].estoque[produtoIndex].quantidade <= quantidade) {
+                lojistas[currentLoja].estoque.splice(produtoIndex, 1);
+                alert(`Produto ${nomeProduto} removido do estoque!`);
+            } else {
+                lojistas[currentLoja].estoque[produtoIndex].quantidade -= quantidade;
+                alert(`Removido ${quantidade} de ${nomeProduto} do estoque!`);
+            }
+            
+            localStorage.setItem("lojistasMamao", encryptData(lojistas));
+            atualizarEstoque();
+            
+            document.getElementById("estoque-codigo").value = "";
+            document.getElementById("estoque-nome-produto").value = "";
+            document.getElementById("estoque-tipo").value = "";
+            document.getElementById("estoque-volume").value = "";
+            document.getElementById("estoque-quantidade").value = "";
+        }
+
+        function atualizarEstoque() {
+            const estoquePanel = document.getElementById("estoque-panel");
+            estoquePanel.innerHTML = "";
+            lojistas[currentLoja].estoque.forEach(produto => {
+                const div = document.createElement("div");
+                div.textContent = `${produto.codigo} - ${produto.nomeProduto} ${produto.tipo} ${produto.volume} - R$${produto.valor.toFixed(2)} (Qtd: ${produto.quantidade})`;
+                estoquePanel.appendChild(div);
+            });
+        }
+
+        function enviarMensagemCaixa() {
+            const mensagem = document.getElementById("mensagem-caixa").value.trim();
+            const clienteSelecionado = document.getElementById("clientes-loja").value;
+            if (!clienteSelecionado || !mensagem) {
+                alert("Selecione um cliente e digite uma mensagem!");
+                return;
+            }
+            if (!conversas[currentLoja]) conversas[currentLoja] = {};
+            if (!conversas[currentLoja][clienteSelecionado]) conversas[currentLoja][clienteSelecionado] = [];
+            conversas[currentLoja][clienteSelecionado].push({
+                remetente: lojistas[currentLoja].storeName,
+                texto: mensagem,
+                timestamp: new Date().toLocaleString()
+            });
+            localStorage.setItem("conversasMamao", encryptData(conversas));
+            document.getElementById("mensagem-caixa").value = "";
+            atualizarChatCaixa();
+        }
+
+        function toggleGravacaoCaixa() {
+            const clienteSelecionado = document.getElementById("clientes-loja").value;
+            if (!clienteSelecionado) {
+                alert("Selecione um cliente primeiro!");
+                return;
+            }
+            if (!isRecordingCaixa) {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    alert("Seu navegador não suporta gravação de áudio!");
+                    return;
+                }
+                navigator.mediaDevices.getUserMedia({ audio: true })
+                    .then(stream => {
+                        mediaRecorder = new MediaRecorder(stream);
+                        audioChunks = [];
+                        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                        mediaRecorder.onstop = enviarAudioCaixa;
+                        mediaRecorder.start();
+                        isRecordingCaixa = true;
+                        document.getElementById("gravar-caixa").textContent = "Parar Gravação";
+                    })
+                    .catch(err => {
+                        alert("Erro ao acessar o microfone. Certifique-se de dar permissão ao Termux e ao navegador! Detalhes: " + err);
+                    });
+            } else {
+                mediaRecorder.stop();
+                mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                isRecordingCaixa = false;
+                document.getElementById("gravar-caixa").textContent = "Gravar Áudio";
+            }
+        }
+
+        function enviarAudioCaixa() {
+            const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+            const reader = new FileReader();
+            reader.onload = () => {
+                const audioBase64 = reader.result;
+                const clienteSelecionado = document.getElementById("clientes-loja").value;
+                if (!conversas[currentLoja]) conversas[currentLoja] = {};
+                if (!conversas[currentLoja][clienteSelecionado]) conversas[currentLoja][clienteSelecionado] = [];
+                conversas[currentLoja][clienteSelecionado].push({
+                    remetente: lojistas[currentLoja].storeName,
+                    audio: audioBase64,
+                    timestamp: new Date().toLocaleString()
+                });
+                localStorage.setItem("conversasMamao", encryptData(conversas));
+                atualizarChatCaixa();
+            };
+            reader.readAsDataURL(audioBlob);
+        }
+
+        function atualizarChatCaixa() {
+            const chatCaixa = document.getElementById("chat-caixa");
+            const clienteSelecionado = document.getElementById("clientes-loja").value;
+            chatCaixa.innerHTML = clienteSelecionado ? `<strong>Chat com ${clienteSelecionado}:</strong><br>` : "Selecione um cliente.";
+            if (clienteSelecionado && conversas[currentLoja] && conversas[currentLoja][clienteSelecionado]) {
+                conversas[currentLoja][clienteSelecionado].forEach(msg => {
+                    const div = document.createElement("div");
+                    // Se o remetente é a loja atual, é "sent" (verde), senão é "received" (amarelo)
+                    div.className = `chat-message ${msg.remetente === lojistas[currentLoja].storeName ? 'sent' : 'received'}`;
+                    if (msg.texto) {
+                        div.innerHTML = `${msg.texto}<span class="timestamp">${msg.timestamp}</span>`;
+                    } else if (msg.audio) {
+                        const audio = document.createElement("audio");
+                        audio.controls = true;
+                        audio.src = msg.audio;
+                        div.innerHTML = `<span class="timestamp">${msg.timestamp}</span>`;
+                        div.appendChild(audio);
+                    }
+                    chatCaixa.appendChild(div);
+                });
+                chatCaixa.scrollTop = chatCaixa.scrollHeight;
+            }
+        }
+
+        function atualizarFormasPagamento() {
+            const formas = document.getElementById("formas-pagamento-input").value.trim();
+            if (!formas) {
+                alert("Digite as formas de pagamento!");
+                return;
+            }
+            lojistas[currentLoja].formasPagamento = formas;
+            localStorage.setItem("lojistasMamao", encryptData(lojistas));
+            alert("Formas de pagamento atualizadas!");
         }
     </script>
 </body>
-</html>
+    </html>
