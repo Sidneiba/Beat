@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    o
-<link rel="manifest" href="/manifest.json">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mamão Chat - Mercado do Bairro</title>
@@ -140,21 +138,21 @@
         }
         .chat-message.sent {
             align-self: flex-end;
-            background-color: #006633; /* Verde Pantone 356 pra quem envia */
+            background-color: #006633;
             color: #fff;
             border-radius: 10px 10px 0 10px;
             padding: 8px;
         }
         .chat-message.received {
             align-self: flex-start;
-            background-color: #FFC107; /* Amarelo da seleção pra quem recebe */
+            background-color: #FFC107;
             color: #333;
             border-radius: 10px 10px 10px 0;
             padding: 8px;
         }
         .chat-message .timestamp {
             font-size: 10px;
-            color: #ccc; /* Cor clara pro timestamp */
+            color: #ccc;
             margin-top: 2px;
         }
         #formas-pagamento {
@@ -179,6 +177,12 @@
         audio {
             width: 100%;
             margin: 5px 0;
+        }
+        .estoque-baixo {
+            background-color: #ffcccc;
+        }
+        .estoque-ok {
+            background-color: #ccffcc;
         }
     </style>
 </head>
@@ -228,6 +232,7 @@
             <button onclick="enviarMensagemCliente()">Enviar Texto</button>
             <button id="gravar-cliente" onclick="toggleGravacaoCliente()">Gravar Áudio</button>
             <button onclick="encerrarChat()">Encerrar Chat</button>
+            <button onclick="bloquearLojista()">Bloquear Lojista</button>
             <button onclick="logoutCliente()">Sair</button>
             <div id="formas-pagamento">Formas de pagamento: A definir pelo lojista</div>
             <div class="voltar-btn"><button onclick="showSection('cadastro-cliente')">Voltar</button></div>
@@ -269,6 +274,7 @@
             <textarea id="mensagem-caixa" placeholder="Digite sua resposta..."></textarea><br>
             <button onclick="enviarMensagemCaixa()">Enviar Texto</button>
             <button id="gravar-caixa" onclick="toggleGravacaoCaixa()">Gravar Áudio</button>
+            <button onclick="bloquearCliente()">Bloquear Cliente</button>
             <textarea id="formas-pagamento-input" placeholder="Formas de pagamento (ex: Pix, Dinheiro)"></textarea><br>
             <button onclick="atualizarFormasPagamento()">Atualizar Formas de Pagamento</button>
             <button onclick="logoutLojista()">Sair</button>
@@ -316,7 +322,8 @@
                     { codigo: "cd204", nomeProduto: "Óleo", tipo: "soja", volume: "900ml", quantidade: 12, valor: 12.49 }
                 ],
                 vendas: [],
-                clientesAtivos: []
+                clientesAtivos: [],
+                bloqueados: {} // { cliente: { ate: "YYYY-MM-DD" ou null } }
             }
         };
         let mediaRecorder = null;
@@ -372,7 +379,8 @@
                 senha: CryptoJS.MD5(senha).toString(),
                 endereco,
                 telefone,
-                cep
+                cep,
+                bloqueados: {} // { lojista: { ate: "YYYY-MM-DD" ou null } }
             };
             localStorage.setItem("clientesMamao", encryptData(clientes));
             errorDiv.textContent = "Cadastro realizado!";
@@ -409,6 +417,9 @@
             lojistasList.innerHTML = "";
             catalogoPanel.innerHTML = "";
             Object.keys(lojistas).forEach(nome => {
+                const bloqueado = clientes[currentCliente]?.bloqueados[nome];
+                const hoje = new Date().toISOString().split("T")[0];
+                if (bloqueado && (bloqueado.ate === null || bloqueado.ate >= hoje)) return;
                 const div = document.createElement("div");
                 div.className = "loja-item";
                 div.textContent = lojistas[nome].storeName;
@@ -495,6 +506,12 @@
                 alert("Carrinho vazio!");
                 return;
             }
+            const bloqueado = lojistas[lojaSelecionada].bloqueados[currentCliente];
+            const hoje = new Date().toISOString().split("T")[0];
+            if (bloqueado && (bloqueado.ate === null || bloqueado.ate >= hoje)) {
+                alert("Você está bloqueado por este lojista!");
+                return;
+            }
             const total = carrinho.reduce((acc, item) => acc + item.valor * item.quantidade, 0);
             const mensagem = prompt(`Confirmar compra de R$${total.toFixed(2)}? Digite instruções de entrega:`);
             if (mensagem !== null) {
@@ -542,6 +559,12 @@
                 alert("Selecione uma loja e digite uma mensagem!");
                 return;
             }
+            const bloqueado = lojistas[lojaSelecionada].bloqueados[currentCliente];
+            const hoje = new Date().toISOString().split("T")[0];
+            if (bloqueado && (bloqueado.ate === null || bloqueado.ate >= hoje)) {
+                alert("Você está bloqueado por este lojista!");
+                return;
+            }
             if (!conversas[lojaSelecionada]) conversas[lojaSelecionada] = {};
             if (!conversas[lojaSelecionada][currentCliente]) conversas[lojaSelecionada][currentCliente] = [];
             conversas[lojaSelecionada][currentCliente].push({
@@ -563,6 +586,12 @@
                 alert("Selecione uma loja primeiro!");
                 return;
             }
+            const bloqueado = lojistas[lojaSelecionada].bloqueados[currentCliente];
+            const hoje = new Date().toISOString().split("T")[0];
+            if (bloqueado && (bloqueado.ate === null || bloqueado.ate >= hoje)) {
+                alert("Você está bloqueado por este lojista!");
+                return;
+            }
             if (!isRecordingCliente) {
                 if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                     alert("Seu navegador não suporta gravação de áudio!");
@@ -579,7 +608,7 @@
                         document.getElementById("gravar-cliente").textContent = "Parar Gravação";
                     })
                     .catch(err => {
-                        alert("Erro ao acessar o microfone. Certifique-se de dar permissão ao Termux e ao navegador! Detalhes: " + err);
+                        alert("Erro ao acessar o microfone: " + err);
                     });
             } else {
                 mediaRecorder.stop();
@@ -617,7 +646,6 @@
             if (lojaSelecionada && conversas[lojaSelecionada] && conversas[lojaSelecionada][currentCliente]) {
                 conversas[lojaSelecionada][currentCliente].forEach(msg => {
                     const div = document.createElement("div");
-                    // Se o remetente é o cliente atual, é "sent" (verde), senão é "received" (amarelo)
                     div.className = `chat-message ${msg.remetente === currentCliente ? 'sent' : 'received'}`;
                     if (msg.texto) {
                         div.innerHTML = `${msg.texto}<span class="timestamp">${msg.timestamp}</span>`;
@@ -632,12 +660,39 @@
                 });
                 chatCliente.scrollTop = chatCliente.scrollHeight;
             }
+            const bloqueado = lojistas[lojaSelecionada]?.bloqueados[currentCliente];
+            const hoje = new Date().toISOString().split("T")[0];
+            if (bloqueado && (bloqueado.ate === null || bloqueado.ate >= hoje)) {
+                chatCliente.innerHTML += `<br><span style="color: red;">Você está bloqueado até ${bloqueado.ate || "desbloqueio manual"}.</span>`;
+            }
         }
 
         function encerrarChat() {
             if (lojaSelecionada && conversas[lojaSelecionada] && conversas[lojaSelecionada][currentCliente]) {
                 delete conversas[lojaSelecionada][currentCliente];
                 localStorage.setItem("conversasMamao", encryptData(conversas));
+                atualizarChatCliente();
+            }
+        }
+
+        function bloquearLojista() {
+            if (!lojaSelecionada) {
+                alert("Selecione uma loja primeiro!");
+                return;
+            }
+            const opcao = prompt("Bloquear até (YYYY-MM-DD) ou 'permanente' para bloqueio manual?");
+            if (opcao) {
+                const data = opcao === "permanente" ? null : opcao;
+                if (data && !/^\d{4}-\d{2}-\d{2}$/.test(data)) {
+                    alert("Formato de data inválido! Use YYYY-MM-DD.");
+                    return;
+                }
+                if (!clientes[currentCliente].bloqueados) clientes[currentCliente].bloqueados = {};
+                clientes[currentCliente].bloqueados[lojaSelecionada] = { ate: data };
+                localStorage.setItem("clientesMamao", encryptData(clientes));
+                alert(`Lojista ${lojistas[lojaSelecionada].storeName} bloqueado ${data ? `até ${data}` : "permanentemente"}!`);
+                atualizarCatalogo();
+                lojaSelecionada = null;
                 atualizarChatCliente();
             }
         }
@@ -663,7 +718,8 @@
                 formasPagamento: "A definir",
                 estoque: [],
                 vendas: [],
-                clientesAtivos: []
+                clientesAtivos: [],
+                bloqueados: {}
             };
             localStorage.setItem("lojistasMamao", encryptData(lojistas));
             errorDiv.textContent = "Cadastro realizado!";
@@ -699,6 +755,9 @@
             const clientesSelect = document.getElementById("clientes-loja");
             clientesSelect.innerHTML = "<option value=''>Selecione um cliente</option>";
             loja.clientesAtivos.forEach(cliente => {
+                const bloqueado = loja.bloqueados[cliente];
+                const hoje = new Date().toISOString().split("T")[0];
+                if (bloqueado && (bloqueado.ate === null || bloqueado.ate >= hoje)) return;
                 const option = document.createElement("option");
                 option.value = cliente;
                 option.textContent = cliente;
@@ -831,6 +890,7 @@
             lojistas[currentLoja].estoque.forEach(produto => {
                 const div = document.createElement("div");
                 div.textContent = `${produto.codigo} - ${produto.nomeProduto} ${produto.tipo} ${produto.volume} - R$${produto.valor.toFixed(2)} (Qtd: ${produto.quantidade})`;
+                div.className = produto.quantidade <= 5 ? "estoque-baixo" : "estoque-ok";
                 estoquePanel.appendChild(div);
             });
         }
@@ -840,6 +900,12 @@
             const clienteSelecionado = document.getElementById("clientes-loja").value;
             if (!clienteSelecionado || !mensagem) {
                 alert("Selecione um cliente e digite uma mensagem!");
+                return;
+            }
+            const bloqueado = clientes[clienteSelecionado]?.bloqueados[currentLoja];
+            const hoje = new Date().toISOString().split("T")[0];
+            if (bloqueado && (bloqueado.ate === null || bloqueado.ate >= hoje)) {
+                alert("Este cliente bloqueou você!");
                 return;
             }
             if (!conversas[currentLoja]) conversas[currentLoja] = {};
@@ -860,6 +926,12 @@
                 alert("Selecione um cliente primeiro!");
                 return;
             }
+            const bloqueado = clientes[clienteSelecionado]?.bloqueados[currentLoja];
+            const hoje = new Date().toISOString().split("T")[0];
+            if (bloqueado && (bloqueado.ate === null || bloqueado.ate >= hoje)) {
+                alert("Este cliente bloqueou você!");
+                return;
+            }
             if (!isRecordingCaixa) {
                 if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                     alert("Seu navegador não suporta gravação de áudio!");
@@ -876,7 +948,7 @@
                         document.getElementById("gravar-caixa").textContent = "Parar Gravação";
                     })
                     .catch(err => {
-                        alert("Erro ao acessar o microfone. Certifique-se de dar permissão ao Termux e ao navegador! Detalhes: " + err);
+                        alert("Erro ao acessar o microfone: " + err);
                     });
             } else {
                 mediaRecorder.stop();
@@ -912,7 +984,6 @@
             if (clienteSelecionado && conversas[currentLoja] && conversas[currentLoja][clienteSelecionado]) {
                 conversas[currentLoja][clienteSelecionado].forEach(msg => {
                     const div = document.createElement("div");
-                    // Se o remetente é a loja atual, é "sent" (verde), senão é "received" (amarelo)
                     div.className = `chat-message ${msg.remetente === lojistas[currentLoja].storeName ? 'sent' : 'received'}`;
                     if (msg.texto) {
                         div.innerHTML = `${msg.texto}<span class="timestamp">${msg.timestamp}</span>`;
@@ -926,6 +997,32 @@
                     chatCaixa.appendChild(div);
                 });
                 chatCaixa.scrollTop = chatCaixa.scrollHeight;
+            }
+            const bloqueado = lojistas[currentLoja].bloqueados[clienteSelecionado];
+            const hoje = new Date().toISOString().split("T")[0];
+            if (bloqueado && (bloqueado.ate === null || bloqueado.ate >= hoje)) {
+                chatCaixa.innerHTML += `<br><span style="color: red;">Cliente bloqueado até ${bloqueado.ate || "desbloqueio manual"}.</span>`;
+            }
+        }
+
+        function bloquearCliente() {
+            const clienteSelecionado = document.getElementById("clientes-loja").value;
+            if (!clienteSelecionado) {
+                alert("Selecione um cliente primeiro!");
+                return;
+            }
+            const opcao = prompt("Bloquear até (YYYY-MM-DD) ou 'permanente' para bloqueio manual?");
+            if (opcao) {
+                const data = opcao === "permanente" ? null : opcao;
+                if (data && !/^\d{4}-\d{2}-\d{2}$/.test(data)) {
+                    alert("Formato de data inválido! Use YYYY-MM-DD.");
+                    return;
+                }
+                if (!lojistas[currentLoja].bloqueados) lojistas[currentLoja].bloqueados = {};
+                lojistas[currentLoja].bloqueados[clienteSelecionado] = { ate: data };
+                localStorage.setItem("lojistasMamao", encryptData(lojistas));
+                alert(`Cliente ${clienteSelecionado} bloqueado ${data ? `até ${data}` : "permanentemente"}!`);
+                atualizarPainelCaixa();
             }
         }
 
