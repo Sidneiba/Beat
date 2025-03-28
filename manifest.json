@@ -1,6 +1,6 @@
 {
-  "name": "Beat App",
-  "short_name": "Beat",
+  "name": "Hammer App",
+  "short_name": "Hammer",
   "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -19,26 +19,26 @@
   ],
   "shortcuts": [
     {
-      "name": "Tocar Agora",
-      "short_name": "Tocar",
-      "description": "Inicia a reprodução da música atual",
-      "url": "/play-now.html",
+      "name": "Dar Lance",
+      "short_name": "Lance",
+      "description": "Fazer um lance no leilão",
+      "url": "/bid.html",
       "icons": [
         {
-          "src": "/icons/play-now-192x192.png",
+          "src": "/icons/bid-192x192.png",
           "sizes": "192x192",
           "type": "image/png"
         }
       ]
     },
     {
-      "name": "Minha Playlist",
-      "short_name": "Playlist",
-      "description": "Acessa sua playlist personalizada",
-      "url": "/playlist.html",
+      "name": "Meus Lances",
+      "short_name": "Lances",
+      "description": "Ver seus lances no leilão",
+      "url": "/my-bids.html",
       "icons": [
         {
-          "src": "/icons/playlist-192x192.png",
+          "src": "/icons/my-bids-192x192.png",
           "sizes": "192x192",
           "type": "image/png"
         }
