@@ -1,17 +1,15 @@
-
-
-
 let userType = null, username = "", users = JSON.parse(localStorage.getItem("users")) || {};
 let products = JSON.parse(localStorage.getItem("products")) || [];
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 let stores = JSON.parse(localStorage.getItem("stores")) || [
-    { name: "Loja do Zé", cep: "12345-678", online: true, products: [
+    { name: "Loja do Zé", cep: "12345-678", online: true, range: 5, products: [
         { name: "Arroz 5kg", price: 25.00 },
-        { name: "Feijão 1kg", price: 8.50 },
-        { name: "Leite 1L", price: 4.20 }
+        { name: "Feijão 1kg", price: 8.50 }
     ]},
-    { name: "Mercado da Maria", cep: "12345-679", online: false, products: [
-        { name: "Macarrão 500g", price: 3.50 },
+    { name: "Mercado da Maria", cep: "12346-789", online: true, range: 8, products: [
+        { name: "Macarrão 500g", price: 3.50 }
+    ]},
+    { name: "Bazar do João", cep: "12350-000", online: false, range: 2, products: [
         { name: "Óleo 900ml", price: 7.00 }
     ]}
 ];
@@ -44,28 +42,8 @@ function registerUser() {
     const phone = document.getElementById("phone-input").value.trim();
     const password = document.getElementById("password-input").value.trim();
 
-    if (!name || !cep || !address || !phone || !password) {
+    if (!name || !cep || !address || !phone || !password || !userType) {
         alert("Preencha todos os campos!");
-        return;
-    }
-
-    if (!/^\d{5}-?\d{3}$/.test(cep)) {
-        alert("CEP inválido! Use o formato 12345-678.");
-        return;
-    }
-
-    if (!/^\d{10,11}$/.test(phone)) {
-        alert("Telefone inválido! Use 10 ou 11 dígitos (ex.: 11987654321).");
-        return;
-    }
-
-    if (!userType) {
-        alert("Selecione se você é Cliente ou Lojista!");
-        return;
-    }
-
-    if (users[name]) {
-        alert("Esse nome já está cadastrado! Use outro.");
         return;
     }
 
@@ -85,13 +63,8 @@ function loginUser() {
     }
 
     const user = users[name];
-    if (!user) {
-        alert("Usuário não encontrado!");
-        return;
-    }
-
-    if (user.password !== password) {
-        alert("Senha incorreta!");
+    if (!user || user.password !== password) {
+        alert("Usuário ou senha incorretos!");
         return;
     }
 
@@ -117,10 +90,10 @@ function initClientPage() {
     storeList.innerHTML = "<h3>Lojas Disponíveis</h3>";
 
     stores.forEach(store => {
-        if (store.online && isWithinRange(userCep, store.cep.replace(/\D/g, ''))) {
+        if (store.online && isWithinRange(userCep, store.cep.replace(/\D/g, ''), store.range)) {
             const div = document.createElement("div");
             div.className = "store-item";
-            div.textContent = store.name;
+            div.textContent = `${store.name} (Raio: ${store.range} km)`;
             div.onclick = () => showCatalog(store);
             storeList.appendChild(div);
         }
@@ -142,9 +115,12 @@ function initClientPage() {
     }
 }
 
-function isWithinRange(cep1, cep2) {
-    const diff = Math.abs(parseInt(cep1) - parseInt(cep2));
-    return diff >= 2000 && diff <= 10000;
+function isWithinRange(clientCep, storeCep, storeRange) {
+    const diff = Math.abs(parseInt(clientCep) - parseInt(storeCep));
+    const maxClientRange = 10000; // Simula 10 km pro cliente
+    const minStoreRange = 2000;   // Simula 2 km mínimo pro lojista
+    const maxStoreRange = storeRange * 1000; // Converte raio do lojista pra escala fictícia
+    return diff <= maxClientRange && diff >= minStoreRange && diff <= maxStoreRange;
 }
 
 function showCatalog(store) {
@@ -211,9 +187,9 @@ function initChatPage() {
     if (cartMessage) {
         addMessage(cartMessage, "user");
         setTimeout(() => {
-            addMessage("Compra confirmada! Pode pagar agora.", "bot");
-            localStorage.removeItem("cartMessage");
+            addMessage("Pedido recebido! Confirmando venda...", "bot");
             localStorage.setItem("paymentConfirmed", "true");
+            setTimeout(() => window.location.href = "client.html", 2000);
         }, 2000);
     }
 }
@@ -227,7 +203,6 @@ function addMessage(text, sender, isAudio = false, audioUrl = null) {
         const audio = document.createElement("audio");
         audio.controls = true;
         audio.src = audioUrl;
-        messageDiv.classList.add("audio-message");
         messageDiv.appendChild(audio);
     } else {
         messageDiv.textContent = text;
