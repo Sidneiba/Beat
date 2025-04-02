@@ -3,58 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="manifest" href="manifest.json">
-    <title>Mercado do Bairro - Cadastro e Login</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <style>
-        body { background-color: #E0F7E0; color: #333; font-family: Arial, sans-serif; }
-        #intro-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #333; display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .door { width: 50%; height: 100%; background-color: #8B4513; position: absolute; transition: transform 2s ease; }
-        .door-left { left: 0; transform-origin: left; }
-        .door-right { right: 0; transform-origin: right; }
-        .door-open .door-left { transform: translateX(-100%); }
-        .door-open .door-right { transform: translateX(100%); }
-        #cart-icon { font-size: 100px; color: #FFC107; position: absolute; z-index: 1001; }
-        #login-container, #register-container { display: none; padding: 20px; background-color: #E0F7E0; width: 400px; margin: 20px auto; text-align: center; border: 3px solid #FFC107; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        .inner-border { border: 2px solid #D8BFD8; padding: 15px; border-radius: 5px; }
-        .tab-btn { cursor: pointer; padding: 10px; background-color: #D8BFD8; border-radius: 5px 5px 0 0; }
-        .tab-btn.active { background-color: #007BFF; color: #fff; }
-        .btn-confirm { background-color: #28A745; color: #fff; }
-        .btn-cancel { background-color: #DC3545; color: #fff; }
-        .btn-neutral { background-color: #007BFF; color: #fff; }
-    </style>
+    <title>Mercado do Bairro</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="intro-screen">
-        <div class="door door-left"></div>
-        <div class="door door-right"></div>
-        <span id="cart-icon">🛒</span>
-    </div>
-    <div id="login-container">
-        <div class="inner-border">
-            <h2>Login</h2>
-            <input type="text" id="login-name" class="form-control mb-2" placeholder="Nome" required>
-            <input type="password" id="login-password" class="form-control mb-2" placeholder="Senha" required>
-            <button class="btn btn-confirm" onclick="loginUser()">Entrar</button>
-            <p class="mt-2">Não tem conta? <span class="tab-btn" onclick="showTab('register')">Cadastre-se</span></p>
-        </div>
-    </div>
-    <div id="register-container">
-        <div class="inner-border">
-            <h2>Cadastro</h2>
-            <input type="text" id="name-input" class="form-control mb-2" placeholder="Nome completo" required>
-            <input type="text" id="cep-input" class="form-control mb-2" placeholder="CEP (ex.: 12345-678)" maxlength="9" required>
-            <input type="text" id="address-input" class="form-control mb-2" placeholder="Endereço aproximado (ex.: Rua Principal, bairro)" required>
-            <input type="text" id="phone-input" class="form-control mb-2" placeholder="Telefone/WhatsApp (ex.: 11987654321)" required>
-            <input type="password" id="password-input" class="form-control mb-2" placeholder="Senha" required>
-            <div class="mb-2">
-                <label>Tipo de usuário:</label><br>
-                <button class="btn btn-neutral mx-1" onclick="setUserType('client')">Cliente</button>
-                <button class="btn btn-neutral mx-1" onclick="setUserType('store')">Lojista</button>
-            </div>
-            <button class="btn btn-confirm" onclick="registerUser()">Cadastrar</button>
-            <p class="mt-2">Já tem conta? <span class="tab-btn" onclick="showTab('login')">Faça login</span></p>
-        </div>
+    <div class="container">
+        <h1>Mercado do Bairro</h1>
+
+        <!-- Formulário de Cadastro -->
+        <h2>Cadastro</h2>
+        <form id="cadastroForm">
+            <input type="text" id="nome" placeholder="Nome" required>
+            <input type="text" id="endereco" placeholder="Endereço" required>
+            <input type="text" id="cep" placeholder="CEP (00000-000)" required>
+            <input type="text" id="telefone" placeholder="Telefone/WhatsApp" required>
+            <input type="password" id="senha" placeholder="Senha" required>
+            <select id="tipoUsuario" required>
+                <option value="">Selecione o tipo</option>
+                <option value="cliente">Cliente</option>
+                <option value="lojista">Lojista</option>
+            </select>
+            <button type="submit">Cadastrar</button>
+        </form>
+
+        <!-- Formulário de Login -->
+        <h2>Login</h2>
+        <form id="loginForm">
+            <input type="text" id="loginNome" placeholder="Nome" required>
+            <input type="password" id="loginSenha" placeholder="Senha" required>
+            <button type="submit">Entrar</button>
+        </form>
     </div>
     <script src="app.js"></script>
 </body>

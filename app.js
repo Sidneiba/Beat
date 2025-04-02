@@ -1,286 +1,261 @@
-let userType = null, username = "", users = JSON.parse(localStorage.getItem("users")) || {};
-let products = JSON.parse(localStorage.getItem("products")) || [];
-let cart = JSON.parse(localStorage.getItem("cart")) || [];
-let stores = JSON.parse(localStorage.getItem("stores")) || [
-    { name: "Loja do Zé", cep: "12345-678", online: true, range: 5, products: [
-        { name: "Arroz 5kg", price: 25.00 },
-        { name: "Feijão 1kg", price: 8.50 }
-    ]},
-    { name: "Mercado da Maria", cep: "12346-789", online: true, range: 8, products: [
-        { name: "Macarrão 500g", price: 3.50 }
-    ]},
-    { name: "Bazar do João", cep: "12350-000", online: false, range: 2, products: [
-        { name: "Óleo 900ml", price: 7.00 }
-    ]}
-];
-let cashEntries = JSON.parse(localStorage.getItem("cashEntries")) || [];
-let mediaRecorder, audioChunks = [];
+// Dados iniciais
+let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+let produtos = JSON.parse(localStorage.getItem("produtos")) || {};
+let carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
+let pedidos = JSON.parse(localStorage.getItem("pedidos")) || [];
+let mensagensFixadas = JSON.parse(localStorage.getItem("mensagensFixadas")) || {};
 
-document.addEventListener("DOMContentLoaded", () => {
-    const introScreen = document.getElementById("intro-screen");
-    if (introScreen) {
-        introScreen.classList.add("door-open");
-        setTimeout(() => {
-            introScreen.style.display = "none";
-            document.getElementById("login-container").style.display = "block";
-        }, 2000);
+// Cadastro
+document.getElementById("cadastroForm")?.addEventListener("submit", function(e) {
+    e.preventDefault();
+    const nome = document.getElementById("nome").value;
+    const endereco = document.getElementById("endereco").value;
+    const cep = document.getElementById("cep").value;
+    const telefone = document.getElementById("telefone").value;
+    const senha = document.getElementById("senha").value;
+    const tipoUsuario = document.getElementById("tipoUsuario").value;
+
+    if (!cep.match(/^[0-9]{5}-[0-9]{3}$/)) {
+        alert("CEP inválido! Use o formato 00000-000.");
+        return;
     }
-    if (document.getElementById("username")) initClientPage();
-    if (document.getElementById("messages")) initChatPage();
-    if (document.getElementById("cash-table")) updateCashTable();
+
+    const usuario = { nome, endereco, cep, telefone, senha, tipoUsuario };
+    usuarios.push(usuario);
+    localStorage.setItem("usuarios", JSON.stringify(usuarios));
+    alert("Cadastro realizado com sucesso!");
+    window.location.href = tipoUsuario === "cliente" ? "client.html" : "stock.html";
 });
 
-function setUserType(type) {
-    userType = type;
-    alert(`Selecionado: ${type === "client" ? "Cliente" : "Lojista"}. Agora clique em "Cadastrar"!`);
-}
+// Login
+document.getElementById("loginForm")?.addEventListener("submit", function(e) {
+    e.preventDefault();
+    const nome = document.getElementById("loginNome").value;
+    const senha = document.getElementById("loginSenha").value;
 
-function registerUser() {
-    const name = document.getElementById("name-input").value.trim();
-    const cep = document.getElementById("cep-input").value.trim();
-    const address = document.getElementById("address-input").value.trim();
-    const phone = document.getElementById("phone-input").value.trim();
-    const password = document.getElementById("password-input").value.trim();
-
-    if (!name || !cep || !address || !phone || !password || !userType) {
-        alert("Preencha todos os campos!");
-        return;
+    const usuario = usuarios.find(u => u.nome === nome && u.senha === senha);
+    if (usuario) {
+        localStorage.setItem("usuarioAtual", JSON.stringify(usuario));
+        window.location.href = usuario.tipoUsuario === "cliente" ? "client.html" : "stock.html";
+    } else {
+        alert("Nome ou senha incorretos.");
     }
+});
 
-    users[name] = { type: userType, cep, address, phone, password };
-    localStorage.setItem("users", JSON.stringify(users));
-    username = name;
-    goToMainPage();
-}
+// Listar Lojas Próximas
+function listarLojas() {
+    const lojaSelect = document.getElementById("lojaEscolhida");
+    if (!lojaSelect) return;
 
-function loginUser() {
-    const name = document.getElementById("login-name").value.trim();
-    const password = document.getElementById("login-password").value.trim();
+    const usuarioAtual = JSON.parse(localStorage.getItem("usuarioAtual"));
+    const lojistas = usuarios.filter(u => u.tipoUsuario === "lojista");
+    lojaSelect.innerHTML = "<option value=''>Selecione uma loja</option>";
 
-    if (!name || !password) {
-        alert("Preencha nome e senha!");
-        return;
-    }
-
-    const user = users[name];
-    if (!user || user.password !== password) {
-        alert("Usuário ou senha incorretos!");
-        return;
-    }
-
-    userType = user.type;
-    username = name;
-    goToMainPage();
-}
-
-function goToMainPage() {
-    if (userType === "client") window.location.href = "client.html";
-    if (userType === "store") window.location.href = "store.html";
-}
-
-function showTab(tab) {
-    document.getElementById("login-container").style.display = tab === "login" ? "block" : "none";
-    document.getElementById("register-container").style.display = tab === "register" ? "block" : "none";
-}
-
-function initClientPage() {
-    document.getElementById("username").textContent = username;
-    const userCep = users[username].cep.replace(/\D/g, '');
-    const storeList = document.getElementById("store-list");
-    storeList.innerHTML = "<h3>Lojas Disponíveis</h3>";
-
-    stores.forEach(store => {
-        if (store.online && isWithinRange(userCep, store.cep.replace(/\D/g, ''), store.range)) {
-            const div = document.createElement("div");
-            div.className = "store-item";
-            div.textContent = `${store.name} (Raio: ${store.range} km)`;
-            div.onclick = () => showCatalog(store);
-            storeList.appendChild(div);
+    lojistas.forEach(lojista => {
+        if (Math.abs(parseInt(lojista.cep.replace("-", "")) - parseInt(usuarioAtual.cep.replace("-", ""))) < 10000) {
+            lojaSelect.innerHTML += `<option value="${lojista.nome}">${lojista.nome}</option>`;
         }
     });
-
-    if (localStorage.getItem("paymentConfirmed") === "true") {
-        document.getElementById("pay-btn").classList.remove("btn-cancel");
-        document.getElementById("pay-btn").classList.add("btn-confirm");
-        document.getElementById("pay-btn").textContent = "Finalizar Pagamento";
-        document.getElementById("pay-btn").onclick = () => {
-            alert("Pagamento finalizado com sucesso!");
-            cart = [];
-            updateCart();
-            localStorage.removeItem("paymentConfirmed");
-            document.getElementById("pay-btn").classList.remove("btn-confirm");
-            document.getElementById("pay-btn").classList.add("btn-cancel");
-            document.getElementById("pay-btn").textContent = "Pagar";
-        };
-    }
 }
 
-function isWithinRange(clientCep, storeCep, storeRange) {
-    const diff = Math.abs(parseInt(clientCep) - parseInt(storeCep));
-    const maxClientRange = 10000; // Simula 10 km pro cliente
-    const minStoreRange = 2000;   // Simula 2 km mínimo pro lojista
-    const maxStoreRange = storeRange * 1000; // Converte raio do lojista pra escala fictícia
-    return diff <= maxClientRange && diff >= minStoreRange && diff <= maxStoreRange;
+// Selecionar Loja
+let lojaAtual = null;
+function selecionarLoja() {
+    lojaAtual = document.getElementById("lojaEscolhida").value;
+    carrinho = [];
+    localStorage.setItem("carrinho", JSON.stringify(carrinho));
+    exibirCatalogo();
+    exibirCarrinho();
+    exibirChat();
 }
 
-function showCatalog(store) {
-    document.getElementById("store-list").style.display = "none";
-    const catalog = document.getElementById("catalog");
-    const cartDiv = document.getElementById("cart");
-    catalog.style.display = "block";
-    cartDiv.style.display = "block";
-    document.getElementById("selected-store").textContent = store.name;
+// Catálogo de Produtos
+function exibirCatalogo() {
+    const catalogo = document.getElementById("catalogo");
+    if (!catalogo || !lojaAtual) return;
 
-    const productList = document.getElementById("product-list");
-    productList.innerHTML = "";
-    store.products.forEach(product => {
-        const div = document.createElement("div");
-        div.className = "product-item";
-        div.textContent = `${product.name} - R$${product.price.toFixed(2)}`;
-        div.onclick = () => addToCart(product.name, product.price);
-        productList.appendChild(div);
+    catalogo.innerHTML = "";
+    const produtosLoja = produtos[lojaAtual] || [];
+    produtosLoja.forEach(produto => {
+        const produtoHTML = `
+            <div class="produto">
+                <h3>${produto.nome}</h3>
+                <p>${produto.descricao}</p>
+                <p>Preço: R$ ${produto.preco}</p>
+                <button onclick="adicionarCarrinho(${produto.id})">Adicionar ao Carrinho</button>
+            </div>
+        `;
+        catalogo.innerHTML += produtoHTML;
     });
 }
 
-function addToCart(name, price) {
-    cart.push({ name, price });
-    localStorage.setItem("cart", JSON.stringify(cart));
-    updateCart();
+// Carrinho de Compras
+function adicionarCarrinho(produtoId) {
+    const produtosLoja = produtos[lojaAtual] || [];
+    const produto = produtosLoja.find(p => p.id === produtoId);
+    if (produto) {
+        carrinho.push(produto);
+        localStorage.setItem("carrinho", JSON.stringify(carrinho));
+        exibirCarrinho();
+    }
 }
 
-function removeFromCart(index) {
-    cart.splice(index, 1);
-    localStorage.setItem("cart", JSON.stringify(cart));
-    updateCart();
+function removerCarrinho(index) {
+    carrinho.splice(index, 1);
+    localStorage.setItem("carrinho", JSON.stringify(carrinho));
+    exibirCarrinho();
 }
 
-function updateCart() {
-    const cartItems = document.getElementById("cart-items");
-    cartItems.innerHTML = "";
-    let total = 0;
-    cart.forEach((item, index) => {
-        total += item.price;
-        const div = document.createElement("div");
-        div.className = "cart-item";
-        div.textContent = `${item.name} - R$${item.price.toFixed(2)}`;
-        div.onclick = () => removeFromCart(index);
-        cartItems.appendChild(div);
+function exibirCarrinho() {
+    const carrinhoDiv = document.getElementById("carrinho");
+    if (!carrinhoDiv) return;
+
+    carrinhoDiv.innerHTML = "";
+    carrinho.forEach((produto, index) => {
+        carrinhoDiv.innerHTML += `
+            <div class="produto-carrinho">
+                <h4>${produto.nome}</h4>
+                <p>Preço: R$ ${produto.preco}</p>
+                <button class="remover-btn" onclick="removerCarrinho(${index})">Remover</button>
+            </div>
+        `;
     });
-    document.getElementById("cart-total").textContent = total.toFixed(2);
-    document.getElementById("pay-btn").disabled = cart.length === 0;
+    const total = carrinho.reduce((acc, p) => acc + parseFloat(p.preco), 0);
+    carrinhoDiv.innerHTML += `<h3>Total: R$ ${total.toFixed(2)}</h3>`;
 }
 
-function sendToChat() {
-    let cartText = "Meu pedido:\n";
-    let total = 0;
-    cart.forEach(item => {
-        cartText += `${item.name} - R$${item.price.toFixed(2)}\n`;
-        total += item.price;
-    });
-    cartText += `Total: R$${total.toFixed(2)}`;
-    localStorage.setItem("cartMessage", cartText);
-    window.location.href = "chat.html";
-}
-
-function initChatPage() {
-    const cartMessage = localStorage.getItem("cartMessage");
-    if (cartMessage) {
-        addMessage(cartMessage, "user");
-        setTimeout(() => {
-            addMessage("Pedido recebido! Confirmando venda...", "bot");
-            localStorage.setItem("paymentConfirmed", "true");
-            setTimeout(() => window.location.href = "client.html", 2000);
-        }, 2000);
-    }
-}
-
-function addMessage(text, sender, isAudio = false, audioUrl = null) {
-    const messagesDiv = document.getElementById("messages");
-    if (!messagesDiv) return;
-    const messageDiv = document.createElement("div");
-    messageDiv.classList.add("message", sender);
-    if (isAudio && audioUrl) {
-        const audio = document.createElement("audio");
-        audio.controls = true;
-        audio.src = audioUrl;
-        messageDiv.appendChild(audio);
-    } else {
-        messageDiv.textContent = text;
-    }
-    messagesDiv.appendChild(messageDiv);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-}
-
-function sendMessage() {
-    const text = document.getElementById("chat-input").value.trim();
-    if (text) {
-        addMessage(text, "user");
-        document.getElementById("chat-input").value = "";
-        setTimeout(() => addMessage("Recebido! Como posso ajudar?", "bot"), 1000);
-    }
-}
-
-function startRecording() {
-    navigator.mediaDevices.getUserMedia({ audio: true })
-        .then(stream => {
-            mediaRecorder = new MediaRecorder(stream);
-            audioChunks = [];
-            mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
-            mediaRecorder.onstop = sendAudioMessage;
-            mediaRecorder.start();
-            document.getElementById("record-btn").disabled = true;
-            document.getElementById("stop-btn").disabled = false;
-        })
-        .catch(err => console.error("Erro ao gravar áudio:", err));
-}
-
-function stopRecording() {
-    mediaRecorder.stop();
-    mediaRecorder.stream.getTracks().forEach(track => track.stop());
-    document.getElementById("record-btn").disabled = false;
-    document.getElementById("stop-btn").disabled = true;
-}
-
-function sendAudioMessage() {
-    const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
-    const audioUrl = URL.createObjectURL(audioBlob);
-    addMessage("", "user", true, audioUrl);
-    setTimeout(() => addMessage("Áudio recebido! Respondendo em breve...", "bot"), 1000);
-}
-
-function addCashEntry(type) {
-    const desc = document.getElementById("cash-desc").value.trim();
-    const amount = parseFloat(document.getElementById("cash-amount").value);
-    if (!desc || isNaN(amount) || amount <= 0) {
-        alert("Preencha a descrição e um valor válido!");
+// Finalizar Compra
+function realizarCheckout() {
+    if (carrinho.length === 0) {
+        alert("Carrinho vazio!");
         return;
     }
-
-    const date = new Date().toLocaleDateString();
-    cashEntries.push({ date, desc, entrada: type === "entrada" ? amount : 0, saida: type === "saida" ? amount : 0 });
-    localStorage.setItem("cashEntries", JSON.stringify(cashEntries));
-    updateCashTable();
-    document.getElementById("cash-desc").value = "";
-    document.getElementById("cash-amount").value = "";
+    const usuario = JSON.parse(localStorage.getItem("usuarioAtual"));
+    const pedido = { id: Date.now(), cliente: usuario.nome, loja: lojaAtual, itens: [...carrinho], total: carrinho.reduce((acc, p) => acc + parseFloat(p.preco), 0) };
+    pedidos.push(pedido);
+    localStorage.setItem("pedidos", JSON.stringify(pedidos));
+    carrinho = [];
+    localStorage.setItem("carrinho", JSON.stringify(carrinho));
+    alert("Compra finalizada! Use o chat para ajustar os detalhes com o lojista.");
+    exibirCarrinho();
 }
 
-function updateCashTable() {
-    const tbody = document.getElementById("cash-body");
-    tbody.innerHTML = "";
-    let balance = 0;
+// Chat
+function exibirChat() {
+    const chat = document.getElementById("chat");
+    if (!chat || !lojaAtual) return;
 
-    cashEntries.forEach(entry => {
-        balance += entry.entrada - entry.saida;
-        const row = document.createElement("tr");
-        row.innerHTML = `
-            <td>${entry.date}</td>
-            <td>${entry.desc}</td>
-            <td>${entry.entrada > 0 ? "R$" + entry.entrada.toFixed(2) : "-"}</td>
-            <td>${entry.saida > 0 ? "R$" + entry.saida.toFixed(2) : "-"}</td>
-            <td class="${balance < 0 ? 'negative' : ''}">R$${balance.toFixed(2)}</td>
+    chat.innerHTML = mensagensFixadas[lojaAtual] ? `<div class="mensagem-fixada">${mensagensFixadas[lojaAtual]}</div>` : "";
+}
+
+document.getElementById("enviarMensagem")?.addEventListener("click", function() {
+    const mensagem = document.getElementById("mensagemInput").value;
+    if (mensagem && lojaAtual) {
+        const chat = document.getElementById("chat");
+        chat.innerHTML += `<div class="mensagem-cliente">${mensagem}</div>`;
+        chat.scrollTop = chat.scrollHeight;
+        document.getElementById("mensagemInput").value = "";
+    }
+});
+
+document.getElementById("enviarAudio")?.addEventListener("click", function() {
+    navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(stream => {
+            const recorder = new MediaRecorder(stream);
+            const chunks = [];
+            recorder.start();
+
+            setTimeout(() => {
+                recorder.stop();
+                stream.getTracks().forEach(track => track.stop());
+            }, 3000);
+
+            recorder.ondataavailable = e => chunks.push(e.data);
+            recorder.onstop = () => {
+                const blob = new Blob(chunks, { type: "audio/webm" });
+                const audioURL = URL.createObjectURL(blob);
+                const chat = document.getElementById("chat");
+                chat.innerHTML += `<div class="mensagem-cliente"><audio controls src="${audioURL}"></audio></div>`;
+                chat.scrollTop = chat.scrollHeight;
+            };
+        })
+        .catch(err => alert("Erro ao gravar áudio: " + err));
+});
+
+// Adicionar Produto ao Estoque
+document.getElementById("produtoForm")?.addEventListener("submit", function(e) {
+    e.preventDefault();
+    const usuario = JSON.parse(localStorage.getItem("usuarioAtual"));
+    const nome = document.getElementById("nomeProduto").value;
+    const descricao = document.getElementById("descricao").value;
+    const preco = document.getElementById("preco").value;
+    const quantidade = document.getElementById("quantidade").value;
+
+    if (!produtos[usuario.nome]) produtos[usuario.nome] = [];
+    const produto = { id: Date.now(), nome, descricao, preco, quantidade };
+    produtos[usuario.nome].push(produto);
+    localStorage.setItem("produtos", JSON.stringify(produtos));
+    alert("Produto adicionado!");
+    exibirEstoque();
+    this.reset();
+});
+
+// Exibir Estoque
+function exibirEstoque() {
+    const estoque = document.getElementById("estoque");
+    if (!estoque) return;
+
+    const usuario = JSON.parse(localStorage.getItem("usuarioAtual"));
+    const produtosLoja = produtos[usuario.nome] || [];
+    estoque.innerHTML = "";
+    produtosLoja.forEach(produto => {
+        estoque.innerHTML += `
+            <div class="produto">
+                <h3>${produto.nome}</h3>
+                <p>${produto.descricao}</p>
+                <p>Preço: R$ ${produto.preco}</p>
+                <p>Quantidade: ${produto.quantidade}</p>
+            </div>
         `;
-        tbody.appendChild(row);
     });
-
-    document.getElementById("cash-balance").textContent = `R$${balance.toFixed(2)}`;
 }
+
+// Exibir Pedidos
+function exibirPedidos() {
+    const pedidosDiv = document.getElementById("pedidos");
+    if (!pedidosDiv) return;
+
+    const usuario = JSON.parse(localStorage.getItem("usuarioAtual"));
+    const pedidosLoja = pedidos.filter(p => p.loja === usuario.nome);
+    pedidosDiv.innerHTML = "";
+    pedidosLoja.forEach(pedido => {
+        pedidosDiv.innerHTML += `
+            <div class="produto">
+                <h3>Pedido #${pedido.id}</h3>
+                <p>Cliente: ${pedido.cliente}</p>
+                <p>Total: R$ ${pedido.total.toFixed(2)}</p>
+            </div>
+        `;
+    });
+}
+
+// Salvar Mensagem Fixada
+function salvarMensagemFixada() {
+    const usuario = JSON.parse(localStorage.getItem("usuarioAtual"));
+    const mensagem = document.getElementById("mensagemFixada").value;
+    if (mensagem) {
+        mensagensFixadas[usuario.nome] = mensagem;
+        localStorage.setItem("mensagensFixadas", JSON.stringify(mensagensFixadas));
+        alert("Mensagem fixada salva!");
+    }
+}
+
+// Inicializar páginas
+document.addEventListener("DOMContentLoaded", function() {
+    listarLojas();
+    exibirCatalogo();
+    exibirCarrinho();
+    exibirChat();
+    exibirEstoque();
+    exibirPedidos();
+});

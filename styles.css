@@ -1,0 +1,72 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #e6ffe6; /* Verde claro */
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: white;
+    border: 2px solid #d8b2ff; /* Roxo claro */
+    border-radius: 5px;
+}
+
+h1, h2 {
+    color: #006600; /* Verde escuro */
+}
+
+input, select, button {
+    display: block;
+    width: 100%;
+    margin: 10px 0;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+button {
+    background-color: #006600;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #004d00;
+}
+
+.produto, .produto-carrinho {
+    border: 1px solid #d8b2ff;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+.chat-box {
+    height: 200px;
+    overflow-y: auto;
+    border: 1px solid #d8b2ff;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.mensagem-cliente {
+    background-color: #e6ffe6;
+    padding: 5px;
+    margin: 5px 0;
+}
+
+.mensagem-fixada {
+    background-color: #d8b2ff;
+    padding: 5px;
+    margin: 5px 0;
+    font-weight: bold;
+}
+
+.remover-btn {
+    background-color: #ff3333;
+    color: white;
+    padding: 5px;
+    margin-top: 5px;
+}
