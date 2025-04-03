@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Estoque - Mercado do Bairro</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <div class="container">
         <h1>Gestão de Estoque</h1>
-        <button onclick="window.location.href='index.html'">Voltar</button>
+        <button onclick="window.location.href='index.html'"><i class="fas fa-arrow-left"></i> Voltar</button>
 
         <!-- Adicionar Produto -->
         <h2>Adicionar Produto</h2>
@@ -18,7 +19,7 @@
             <input type="text" id="descricao" placeholder="Descrição" required>
             <input type="number" id="preco" placeholder="Preço" step="0.01" required>
             <input type="number" id="quantidade" placeholder="Quantidade" required>
-            <button type="submit">Adicionar</button>
+            <button type="submit"><i class="fas fa-plus"></i> Adicionar</button>
         </form>
 
         <!-- Tabela de Estoque -->
@@ -32,7 +33,20 @@
         <!-- Mensagem Fixada -->
         <h2>Mensagem Fixada no Chat</h2>
         <input type="text" id="mensagemFixada" placeholder="Ex.: Pagamento via Pix: 12345">
-        <button onclick="salvarMensagemFixada()">Salvar Mensagem</button>
+        <button onclick="salvarMensagemFixada()"><i class="fas fa-thumbtack"></i> Salvar</button>
+
+        <!-- Chat com Cliente -->
+        <h2>Chat com Clientes</h2>
+        <select id="clienteChat" onchange="exibirChat()">
+            <option value="">Selecione um cliente</option>
+        </select>
+        <div id="chat" class="chat-box"></div>
+        <input type="text" id="mensagemInput" placeholder="Digite sua resposta">
+        <button id="enviarMensagem"><i class="fas fa-paper-plane"></i> Enviar</button>
+
+        <!-- Botão de Simulação -->
+        <h2>Simulação</h2>
+        <button onclick="simularCompraCliente()">Simular Compra como Cliente</button>
     </div>
     <script src="app.js"></script>
 </body>

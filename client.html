@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Compras - Mercado do Bairro</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <div class="container">
         <h1>Compras</h1>
-        <button onclick="window.location.href='index.html'">Voltar</button>
+        <button onclick="window.location.href='index.html'"><i class="fas fa-arrow-left"></i> Voltar</button>
 
         <!-- Escolha de Loja -->
         <h2>Escolha uma Loja</h2>
@@ -24,14 +25,14 @@
         <!-- Carrinho de Compras -->
         <h2>Carrinho</h2>
         <div id="carrinho"></div>
-        <button onclick="realizarCheckout()">Finalizar Compra</button>
+        <button onclick="realizarCheckout()"><i class="fas fa-check"></i> Finalizar Compra</button>
 
         <!-- Chat -->
         <h2>Chat com Lojista</h2>
         <div id="chat" class="chat-box"></div>
         <input type="text" id="mensagemInput" placeholder="Digite sua mensagem">
-        <button id="enviarMensagem">Enviar Texto</button>
-        <button id="enviarAudio">Enviar Áudio</button>
+        <button id="enviarMensagem"><i class="fas fa-paper-plane"></i> Enviar</button>
+        <button id="enviarAudio"><i class="fas fa-microphone"></i> Enviar Áudio</button>
     </div>
     <script src="app.js"></script>
 </body>

@@ -31,6 +31,13 @@ button {
     color: white;
     border: none;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+button i {
+    margin-right: 5px;
 }
 
 button:hover {
@@ -41,6 +48,9 @@ button:hover {
     border: 1px solid #d8b2ff;
     padding: 10px;
     margin: 10px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .chat-box {
@@ -57,6 +67,13 @@ button:hover {
     margin: 5px 0;
 }
 
+.mensagem-lojista {
+    background-color: #d8b2ff;
+    padding: 5px;
+    margin: 5px 0;
+    text-align: right;
+}
+
 .mensagem-fixada {
     background-color: #d8b2ff;
     padding: 5px;
@@ -64,9 +81,16 @@ button:hover {
     font-weight: bold;
 }
 
-.remover-btn {
+.remover-btn, .ajustar-btn {
     background-color: #ff3333;
     color: white;
     padding: 5px;
-    margin-top: 5px;
+    margin: 5px;
+}
+
+.confirmar-btn {
+    background-color: #006600;
+    color: white;
+    padding: 5px;
+    margin: 5px;
 }

@@ -1,9 +1,57 @@
+
 // Dados iniciais
 let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
 let produtos = JSON.parse(localStorage.getItem("produtos")) || {};
 let carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
 let pedidos = JSON.parse(localStorage.getItem("pedidos")) || [];
 let mensagensFixadas = JSON.parse(localStorage.getItem("mensagensFixadas")) || {};
+let chatHistorico = JSON.parse(localStorage.getItem("chatHistorico")) || {};
+
+// Loja e Cliente de Simulação
+const lojaSimulacao = {
+    nome: "Loja Simulação",
+    endereco: "Rua Teste, 123",
+    cep: "12345-000",
+    telefone: "11999999999",
+    senha: "123",
+    tipoUsuario: "lojista"
+};
+
+const clienteSimulacao = {
+    nome: "Cliente Simulação",
+    endereco: "Rua Cliente, 456",
+    cep: "12345-111",
+    telefone: "11888888888",
+    senha: "123",
+    tipoUsuario: "cliente"
+};
+
+// Catálogo da Loja Simulação
+const catalogoSimulacao = [
+    { id: 1, nome: "Arroz", tipo: "Alimento", preco: 5.99, marca: "Tio João", quantidade: 50, descricao: "Arroz branco 5kg" },
+    { id: 2, nome: "Feijão", tipo: "Alimento", preco: 7.50, marca: "Camil", quantidade: 40, descricao: "Feijão preto 1kg" },
+    { id: 3, nome: "Macarrão", tipo: "Alimento", preco: 3.20, marca: "Renata", quantidade: 60, descricao: "Espaguete 500g" },
+    { id: 4, nome: "Leite", tipo: "Bebida", preco: 4.80, marca: "Itambé", quantidade: 30, descricao: "Leite integral 1L" },
+    { id: 5, nome: "Coca-Cola", tipo: "Bebida", preco: 6.99, marca: "Coca-Cola", quantidade: 25, descricao: "Refrigerante 2L" },
+    { id: 6, nome: "Sabonete", tipo: "Higiene", preco: 2.10, marca: "Dove", quantidade: 70, descricao: "Sabonete em barra 90g" },
+    { id: 7, nome: "Shampoo", tipo: "Higiene", preco: 12.90, marca: "Seda", quantidade: 20, descricao: "Shampoo 325ml" },
+    { id: 8, nome: "Detergente", tipo: "Limpeza", preco: 1.99, marca: "Ypê", quantidade: 80, descricao: "Detergente líquido 500ml" },
+    { id: 9, nome: "Papel Higiênico", tipo: "Higiene", preco: 8.50, marca: "Neve", quantidade: 35, descricao: "Pacote com 4 rolos" },
+    { id: 10, nome: "Biscoito", tipo: "Alimento", preco: 3.50, marca: "Nestlé", quantidade: 45, descricao: "Biscoito recheado 140g" }
+];
+
+// Inicializar Loja Simulação
+function inicializarSimulacao() {
+    if (!usuarios.find(u => u.nome === "Loja Simulação")) {
+        usuarios.push(lojaSimulacao);
+        produtos["Loja Simulação"] = catalogoSimulacao;
+    }
+    if (!usuarios.find(u => u.nome === "Cliente Simulação")) {
+        usuarios.push(clienteSimulacao);
+    }
+    localStorage.setItem("usuarios", JSON.stringify(usuarios));
+    localStorage.setItem("produtos", JSON.stringify(produtos));
+}
 
 // Cadastro
 document.getElementById("cadastroForm")?.addEventListener("submit", function(e) {
@@ -42,6 +90,12 @@ document.getElementById("loginForm")?.addEventListener("submit", function(e) {
     }
 });
 
+// Simular Compra como Cliente
+function simularCompraCliente() {
+    localStorage.setItem("usuarioAtual", JSON.stringify(clienteSimulacao));
+    window.location.href = "client.html";
+}
+
 // Listar Lojas Próximas
 function listarLojas() {
     const lojaSelect = document.getElementById("lojaEscolhida");
@@ -52,8 +106,9 @@ function listarLojas() {
     lojaSelect.innerHTML = "<option value=''>Selecione uma loja</option>";
 
     lojistas.forEach(lojista => {
-        if (Math.abs(parseInt(lojista.cep.replace("-", "")) - parseInt(usuarioAtual.cep.replace("-", ""))) < 10000) {
-            lojaSelect.innerHTML += `<option value="${lojista.nome}">${lojista.nome}</option>`;
+        const distancia = Math.abs(parseInt(lojista.cep.replace("-", "")) - parseInt(usuarioAtual.cep.replace("-", "")));
+        if (distancia < 10000 || lojista.nome === "Loja Simulação") {
+            lojaSelect.innerHTML += `<option value="${lojista.nome}">${lojista.nome} (${distancia/1000} km)</option>`;
         }
     });
 }
@@ -80,9 +135,10 @@ function exibirCatalogo() {
         const produtoHTML = `
             <div class="produto">
                 <h3>${produto.nome}</h3>
-                <p>${produto.descricao}</p>
+                <p>Tipo: ${produto.tipo}</p>
+                <p>Marca: ${produto.marca}</p>
                 <p>Preço: R$ ${produto.preco}</p>
-                <button onclick="adicionarCarrinho(${produto.id})">Adicionar ao Carrinho</button>
+                <button onclick="adicionarCarrinho(${produto.id})"><i class="fas fa-plus"></i> Adicionar</button>
             </div>
         `;
         catalogo.innerHTML += produtoHTML;
@@ -94,14 +150,22 @@ function adicionarCarrinho(produtoId) {
     const produtosLoja = produtos[lojaAtual] || [];
     const produto = produtosLoja.find(p => p.id === produtoId);
     if (produto) {
-        carrinho.push(produto);
+        const itemExistente = carrinho.find(i => i.id === produtoId);
+        if (itemExistente) {
+            itemExistente.quantidade++;
+        } else {
+            carrinho.push({ ...produto, quantidade: 1 });
+        }
         localStorage.setItem("carrinho", JSON.stringify(carrinho));
         exibirCarrinho();
     }
 }
 
-function removerCarrinho(index) {
-    carrinho.splice(index, 1);
+function ajustarQuantidade(index, delta) {
+    carrinho[index].quantidade += delta;
+    if (carrinho[index].quantidade <= 0) {
+        carrinho.splice(index, 1);
+    }
     localStorage.setItem("carrinho", JSON.stringify(carrinho));
     exibirCarrinho();
 }
@@ -111,16 +175,22 @@ function exibirCarrinho() {
     if (!carrinhoDiv) return;
 
     carrinhoDiv.innerHTML = "";
-    carrinho.forEach((produto, index) => {
+    carrinho.forEach((item, index) => {
         carrinhoDiv.innerHTML += `
             <div class="produto-carrinho">
-                <h4>${produto.nome}</h4>
-                <p>Preço: R$ ${produto.preco}</p>
-                <button class="remover-btn" onclick="removerCarrinho(${index})">Remover</button>
+                <div>
+                    <h4>${item.nome}</h4>
+                    <p>Preço: R$ ${item.preco} x ${item.quantidade} = R$ ${(item.preco * item.quantidade).toFixed(2)}</p>
+                </div>
+                <div>
+                    <button class="ajustar-btn" onclick="ajustarQuantidade(${index}, -1)"><i class="fas fa-minus"></i></button>
+                    <span>${item.quantidade}</span>
+                    <button class="ajustar-btn" onclick="ajustarQuantidade(${index}, 1)"><i class="fas fa-plus"></i></button>
+                </div>
             </div>
         `;
     });
-    const total = carrinho.reduce((acc, p) => acc + parseFloat(p.preco), 0);
+    const total = carrinho.reduce((acc, item) => acc + item.preco * item.quantidade, 0);
     carrinhoDiv.innerHTML += `<h3>Total: R$ ${total.toFixed(2)}</h3>`;
 }
 
@@ -131,7 +201,7 @@ function realizarCheckout() {
         return;
     }
     const usuario = JSON.parse(localStorage.getItem("usuarioAtual"));
-    const pedido = { id: Date.now(), cliente: usuario.nome, loja: lojaAtual, itens: [...carrinho], total: carrinho.reduce((acc, p) => acc + parseFloat(p.preco), 0) };
+    const pedido = { id: Date.now(), cliente: usuario.nome, loja: lojaAtual, itens: [...carrinho], total: carrinho.reduce((acc, item) => acc + item.preco * item.quantidade, 0), confirmado: false };
     pedidos.push(pedido);
     localStorage.setItem("pedidos", JSON.stringify(pedidos));
     carrinho = [];
@@ -142,23 +212,57 @@ function realizarCheckout() {
 
 // Chat
 function exibirChat() {
-    const chat = document.getElementById("chat");
-    if (!chat || !lojaAtual) return;
+    const chatDiv = document.getElementById("chat");
+    if (!chatDiv) return;
 
-    chat.innerHTML = mensagensFixadas[lojaAtual] ? `<div class="mensagem-fixada">${mensagensFixadas[lojaAtual]}</div>` : "";
+    const usuarioAtual = JSON.parse(localStorage.getItem("usuarioAtual"));
+    let chaveChat;
+    if (usuarioAtual.tipoUsuario === "cliente") {
+        chaveChat = `${usuarioAtual.nome}-${lojaAtual}`;
+    } else {
+        const clienteSelecionado = document.getElementById("clienteChat")?.value;
+        chaveChat = clienteSelecionado ? `${clienteSelecionado}-${usuarioAtual.nome}` : null;
+    }
+
+    chatDiv.innerHTML = mensagensFixadas[lojaAtual] ? `<div class="mensagem-fixada">${mensagensFixadas[lojaAtual]}</div>` : "";
+    if (chaveChat && chatHistorico[chaveChat]) {
+        chatHistorico[chaveChat].forEach(msg => {
+            const classe = msg.autor === "cliente" ? "mensagem-cliente" : "mensagem-lojista";
+            chatDiv.innerHTML += `<div class="${classe}">${msg.conteudo}</div>`;
+        });
+    }
+    chatDiv.scrollTop = chatDiv.scrollHeight;
 }
 
-document.getElementById("enviarMensagem")?.addEventListener("click", function() {
-    const mensagem = document.getElementById("mensagemInput").value;
-    if (mensagem && lojaAtual) {
-        const chat = document.getElementById("chat");
-        chat.innerHTML += `<div class="mensagem-cliente">${mensagem}</div>`;
-        chat.scrollTop = chat.scrollHeight;
-        document.getElementById("mensagemInput").value = "";
-    }
-});
+function enviarMensagem() {
+    const mensagemInput = document.getElementById("mensagemInput");
+    const mensagem = mensagemInput.value;
+    const usuarioAtual = JSON.parse(localStorage.getItem("usuarioAtual"));
+    if (!mensagem || !usuarioAtual) return;
 
-document.getElementById("enviarAudio")?.addEventListener("click", function() {
+    let chaveChat, autor;
+    if (usuarioAtual.tipoUsuario === "cliente") {
+        chaveChat = `${usuarioAtual.nome}-${lojaAtual}`;
+        autor = "cliente";
+    } else {
+        const clienteSelecionado = document.getElementById("clienteChat")?.value;
+        chaveChat = clienteSelecionado ? `${clienteSelecionado}-${usuarioAtual.nome}` : null;
+        autor = "lojista";
+    }
+
+    if (chaveChat) {
+        if (!chatHistorico[chaveChat]) chatHistorico[chaveChat] = [];
+        chatHistorico[chaveChat].push({ autor, conteudo: mensagem });
+        localStorage.setItem("chatHistorico", JSON.stringify(chatHistorico));
+        exibirChat();
+        mensagemInput.value = "";
+    }
+}
+
+function enviarAudio() {
+    const usuarioAtual = JSON.parse(localStorage.getItem("usuarioAtual"));
+    if (!usuarioAtual || usuarioAtual.tipoUsuario !== "cliente") return;
+
     navigator.mediaDevices.getUserMedia({ audio: true })
         .then(stream => {
             const recorder = new MediaRecorder(stream);
@@ -174,13 +278,37 @@ document.getElementById("enviarAudio")?.addEventListener("click", function() {
             recorder.onstop = () => {
                 const blob = new Blob(chunks, { type: "audio/webm" });
                 const audioURL = URL.createObjectURL(blob);
-                const chat = document.getElementById("chat");
-                chat.innerHTML += `<div class="mensagem-cliente"><audio controls src="${audioURL}"></audio></div>`;
-                chat.scrollTop = chat.scrollHeight;
+                const chaveChat = `${usuarioAtual.nome}-${lojaAtual}`;
+                if (!chatHistorico[chaveChat]) chatHistorico[chaveChat] = [];
+                chatHistorico[chaveChat].push({ autor: "cliente", conteudo: `<audio controls src="${audioURL}"></audio>` });
+                localStorage.setItem("chatHistorico", JSON.stringify(chatHistorico));
+                exibirChat();
             };
         })
         .catch(err => alert("Erro ao gravar áudio: " + err));
+}
+
+// Configurar Eventos do Chat
+document.addEventListener("DOMContentLoaded", function() {
+    const enviarMensagemBtn = document.getElementById("enviarMensagem");
+    const enviarAudioBtn = document.getElementById("enviarAudio");
+    if (enviarMensagemBtn) enviarMensagemBtn.onclick = enviarMensagem;
+    if (enviarAudioBtn) enviarAudioBtn.onclick = enviarAudio;
 });
+
+// Listar Clientes no Chat do Lojista
+function listarClientesChat() {
+    const clienteSelect = document.getElementById("clienteChat");
+    if (!clienteSelect) return;
+
+    const usuarioAtual = JSON.parse(localStorage.getItem("usuarioAtual"));
+    const clientes = pedidos.filter(p => p.loja === usuarioAtual.nome).map(p => p.cliente);
+    const clientesUnicos = [...new Set(clientes)];
+    clienteSelect.innerHTML = "<option value=''>Selecione um cliente</option>";
+    clientesUnicos.forEach(cliente => {
+        clienteSelect.innerHTML += `<option value="${cliente}">${cliente}</option>`;
+    });
+}
 
 // Adicionar Produto ao Estoque
 document.getElementById("produtoForm")?.addEventListener("submit", function(e) {
@@ -220,7 +348,7 @@ function exibirEstoque() {
     });
 }
 
-// Exibir Pedidos
+// Exibir Pedidos com Confirmação
 function exibirPedidos() {
     const pedidosDiv = document.getElementById("pedidos");
     if (!pedidosDiv) return;
@@ -228,15 +356,31 @@ function exibirPedidos() {
     const usuario = JSON.parse(localStorage.getItem("usuarioAtual"));
     const pedidosLoja = pedidos.filter(p => p.loja === usuario.nome);
     pedidosDiv.innerHTML = "";
-    pedidosLoja.forEach(pedido => {
+    pedidosLoja.forEach((pedido, index) => {
         pedidosDiv.innerHTML += `
             <div class="produto">
                 <h3>Pedido #${pedido.id}</h3>
                 <p>Cliente: ${pedido.cliente}</p>
                 <p>Total: R$ ${pedido.total.toFixed(2)}</p>
+                <p>Status: ${pedido.confirmado ? "Confirmado" : "Pendente"}</p>
+                ${!pedido.confirmado ? `<button class="confirmar-btn" onclick="confirmarPedido(${index})"><i class="fas fa-check"></i> Confirmar</button>` : ""}
             </div>
         `;
     });
+}
+
+// Confirmar Pedido
+function confirmarPedido(index) {
+    const usuario = JSON.parse(localStorage.getItem("usuarioAtual"));
+    const pedidosLoja = pedidos.filter(p => p.loja === usuario.nome);
+    pedidosLoja[index].confirmado = true;
+    localStorage.setItem("pedidos", JSON.stringify(pedidos));
+    const chaveChat = `${pedidosLoja[index].cliente}-${usuario.nome}`;
+    if (!chatHistorico[chaveChat]) chatHistorico[chaveChat] = [];
+    chatHistorico[chaveChat].push({ autor: "lojista", conteudo: "Pedido confirmado!" });
+    localStorage.setItem("chatHistorico", JSON.stringify(chatHistorico));
+    exibirPedidos();
+    exibirChat();
 }
 
 // Salvar Mensagem Fixada
@@ -247,15 +391,296 @@ function salvarMensagemFixada() {
         mensagensFixadas[usuario.nome] = mensagem;
         localStorage.setItem("mensagensFixadas", JSON.stringify(mensagensFixadas));
         alert("Mensagem fixada salva!");
+        exibirChat();
     }
 }
 
 // Inicializar páginas
 document.addEventListener("DOMContentLoaded", function() {
+    inicializarSimulacao();
     listarLojas();
     exibirCatalogo();
     exibirCarrinho();
     exibirChat();
     exibirEstoque();
     exibirPedidos();
+    listarClientesChat();
+});
+
+// Chat
+function exibirChat() {
+    const chatDiv = document.getElementById("chat");
+    if (!chatDiv) return;
+
+    const usuarioAtual = JSON.parse(localStorage.getItem("usuarioAtual"));
+    let chaveChat;
+    if (usuarioAtual.tipoUsuario === "cliente") {
+        chaveChat = `${usuarioAtual.nome}-${lojaAtual}`;
+    } else {
+        const clienteSelecionado = document.getElementById("clienteChat")?.value;
+        chaveChat = clienteSelecionado ? `${clienteSelecionado}-${usuarioAtual.nome}` : null;
+    }
+
+    chatDiv.innerHTML = mensagensFixadas[lojaAtual] ? `<div class="mensagem-fixada">${mensagensFixadas[lojaAtual]}</div>` : "";
+    if (chaveChat && chatHistorico[chaveChat]) {
+        chatDiv.innerHTML += chatHistorico[chaveChat].map(msg => {
+            const classe = msg.autor === "cliente" ? "mensagem-cliente" : "mensagem-lojista";
+            return `<div class="${classe}">${msg.conteudo}</div>`;
+        }).join("");
+    }
+    chatDiv.scrollTop = chatDiv.scrollHeight;
+}
+
+function enviarMensagem() {
+    const mensagemInput = document.getElementById("mensagemInput");
+    if (!mensagemInput) return;
+    const mensagem = mensagemInput.value.trim();
+    const usuarioAtual = JSON.parse(localStorage.getItem("usuarioAtual"));
+    if (!mensagem || !usuarioAtual) return;
+
+    let chaveChat, autor;
+    if (usuarioAtual.tipoUsuario === "cliente") {
+        chaveChat = `${usuarioAtual.nome}-${lojaAtual}`;
+        autor = "cliente";
+    } else {
+        const clienteSelecionado = document.getElementById("clienteChat")?.value;
+        chaveChat = clienteSelecionado ? `${clienteSelecionado}-${usuarioAtual.nome}` : null;
+        autor = "lojista";
+    }
+
+    if (chaveChat) {
+        if (!chatHistorico[chaveChat]) chatHistorico[chaveChat] = [];
+        chatHistorico[chaveChat].push({ autor, conteudo: mensagem });
+        localStorage.setItem("chatHistorico", JSON.stringify(chatHistorico));
+        exibirChat();
+        mensagemInput.value = "";
+    }
+}
+
+function enviarAudio() {
+    const usuarioAtual = JSON.parse(localStorage.getItem("usuarioAtual"));
+    if (!usuarioAtual || usuarioAtual.tipoUsuario !== "cliente") return;
+
+    navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(stream => {
+            const recorder = new MediaRecorder(stream);
+            const chunks = [];
+            recorder.start();
+            console.log("Gravando áudio..."); // Debug
+
+            setTimeout(() => {
+                recorder.stop();
+                stream.getTracks().forEach(track => track.stop());
+                console.log("Áudio parado após 5 segundos"); // Debug
+            }, 5000);
+
+            recorder.ondataavailable = e => chunks.push(e.data);
+            recorder.onstop = () => {
+                const blob = new Blob(chunks, { type: "audio/webm" });
+                const audioURL = URL.createObjectURL(blob);
+                const chaveChat = `${usuarioAtual.nome}-${lojaAtual}`;
+                if (!chatHistorico[chaveChat]) chatHistorico[chaveChat] = [];
+                chatHistorico[chaveChat].push({ autor: "cliente", conteudo: `<audio controls src="${audioURL}"></audio>` });
+                localStorage.setItem("chatHistorico", JSON.stringify(chatHistorico));
+                exibirChat();
+                console.log("Áudio salvo:", audioURL); // Debug
+            };
+        })
+        .catch(err => {
+            console.error("Erro ao gravar áudio:", err);
+            alert("Erro ao gravar áudio: " + err.message);
+        });
+}
+
+// Configurar Eventos do Chat
+document.addEventListener("DOMContentLoaded", function() {
+    const enviarMensagemBtn = document.getElementById("enviarMensagem");
+    const enviarAudioBtn = document.getElementById("enviarAudio");
+    if (enviarMensagemBtn) enviarMensagemBtn.onclick = enviarMensagem;
+    if (enviarAudioBtn) enviarAudioBtn.onclick = enviarAudio;
+});
+// Chat
+function exibirChat() {
+    const chatDiv = document.getElementById("chat");
+    if (!chatDiv) return;
+
+    const usuarioAtual = JSON.parse(localStorage.getItem("usuarioAtual"));
+    let chaveChat;
+    if (usuarioAtual.tipoUsuario === "cliente") {
+        chaveChat = `${usuarioAtual.nome}-${lojaAtual}`;
+    } else {
+        const clienteSelecionado = document.getElementById("clienteChat")?.value;
+        chaveChat = clienteSelecionado ? `${clienteSelecionado}-${usuarioAtual.nome}` : null;
+    }
+
+    chatDiv.innerHTML = mensagensFixadas[lojaAtual] ? `<div class="mensagem-fixada">${mensagensFixadas[lojaAtual]}</div>` : "";
+    if (chaveChat && chatHistorico[chaveChat]) {
+        chatDiv.innerHTML += chatHistorico[chaveChat].map(msg => {
+            const classe = msg.autor === "cliente" ? "mensagem-cliente" : "mensagem-lojista";
+            return `<div class="${classe}">${msg.conteudo}</div>`;
+        }).join("");
+    }
+    chatDiv.scrollTop = chatDiv.scrollHeight;
+}
+
+function enviarMensagem() {
+    const mensagemInput = document.getElementById("mensagemInput");
+    if (!mensagemInput) return;
+    const mensagem = mensagemInput.value.trim();
+    const usuarioAtual = JSON.parse(localStorage.getItem("usuarioAtual"));
+    if (!mensagem || !usuarioAtual) return;
+
+    let chaveChat, autor;
+    if (usuarioAtual.tipoUsuario === "cliente") {
+        chaveChat = `${usuarioAtual.nome}-${lojaAtual}`;
+        autor = "cliente";
+    } else {
+        const clienteSelecionado = document.getElementById("clienteChat")?.value;
+        chaveChat = clienteSelecionado ? `${clienteSelecionado}-${usuarioAtual.nome}` : null;
+        autor = "lojista";
+    }
+
+    if (chaveChat) {
+        if (!chatHistorico[chaveChat]) chatHistorico[chaveChat] = [];
+        chatHistorico[chaveChat].push({ autor, conteudo: mensagem });
+        localStorage.setItem("chatHistorico", JSON.stringify(chatHistorico));
+        exibirChat();
+        mensagemInput.value = "";
+    }
+}
+
+function enviarAudio() {
+    const usuarioAtual = JSON.parse(localStorage.getItem("usuarioAtual"));
+    if (!usuarioAtual || usuarioAtual.tipoUsuario !== "cliente") return;
+
+    navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(stream => {
+            const recorder = new MediaRecorder(stream);
+            const chunks = [];
+            recorder.start();
+            console.log("Gravando áudio..."); // Debug
+
+            setTimeout(() => {
+                recorder.stop();
+                stream.getTracks().forEach(track => track.stop());
+                console.log("Áudio parado após 5 segundos"); // Debug
+            }, 5000);
+
+            recorder.ondataavailable = e => chunks.push(e.data);
+            recorder.onstop = () => {
+                const blob = new Blob(chunks, { type: "audio/webm" });
+                const audioURL = URL.createObjectURL(blob);
+                const chaveChat = `${usuarioAtual.nome}-${lojaAtual}`;
+                if (!chatHistorico[chaveChat]) chatHistorico[chaveChat] = [];
+                chatHistorico[chaveChat].push({ autor: "cliente", conteudo: `<audio controls src="${audioURL}"></audio>` });
+                localStorage.setItem("chatHistorico", JSON.stringify(chatHistorico));
+                exibirChat();
+                console.log("Áudio salvo:", audioURL); // Debug
+            };
+        })
+        .catch(err => {
+            console.error("Erro ao gravar áudio:", err);
+            alert("Erro ao gravar áudio: " + err.message);
+        });
+}
+
+// Configurar Eventos do Chat
+document.addEventListener("DOMContentLoaded", function() {
+    const enviarMensagemBtn = document.getElementById("enviarMensagem");
+    const enviarAudioBtn = document.getElementById("enviarAudio");
+    if (enviarMensagemBtn) enviarMensagemBtn.onclick = enviarMensagem;
+    if (enviarAudioBtn) enviarAudioBtn.onclick = enviarAudio;
+});
+
+// Chat
+function exibirChat() {
+    const chatDiv = document.getElementById("chat");
+    if (!chatDiv) return;
+
+    const usuarioAtual = JSON.parse(localStorage.getItem("usuarioAtual"));
+    let chaveChat;
+    if (usuarioAtual.tipoUsuario === "cliente") {
+        chaveChat = `${usuarioAtual.nome}-${lojaAtual}`;
+    } else {
+        const clienteSelecionado = document.getElementById("clienteChat")?.value;
+        chaveChat = clienteSelecionado ? `${clienteSelecionado}-${usuarioAtual.nome}` : null;
+    }
+
+    chatDiv.innerHTML = mensagensFixadas[lojaAtual] ? `<div class="mensagem-fixada">${mensagensFixadas[lojaAtual]}</div>` : "";
+    if (chaveChat && chatHistorico[chaveChat]) {
+        chatDiv.innerHTML += chatHistorico[chaveChat].map(msg => {
+            const classe = msg.autor === "cliente" ? "mensagem-cliente" : "mensagem-lojista";
+            return `<div class="${classe}">${msg.conteudo}</div>`;
+        }).join("");
+    }
+    chatDiv.scrollTop = chatDiv.scrollHeight;
+}
+
+function enviarMensagem() {
+    const mensagemInput = document.getElementById("mensagemInput");
+    if (!mensagemInput) return;
+    const mensagem = mensagemInput.value.trim();
+    const usuarioAtual = JSON.parse(localStorage.getItem("usuarioAtual"));
+    if (!mensagem || !usuarioAtual) return;
+
+    let chaveChat, autor;
+    if (usuarioAtual.tipoUsuario === "cliente") {
+        chaveChat = `${usuarioAtual.nome}-${lojaAtual}`;
+        autor = "cliente";
+    } else {
+        const clienteSelecionado = document.getElementById("clienteChat")?.value;
+        chaveChat = clienteSelecionado ? `${clienteSelecionado}-${usuarioAtual.nome}` : null;
+        autor = "lojista";
+    }
+
+    if (chaveChat) {
+        if (!chatHistorico[chaveChat]) chatHistorico[chaveChat] = [];
+        chatHistorico[chaveChat].push({ autor, conteudo: mensagem });
+        localStorage.setItem("chatHistorico", JSON.stringify(chatHistorico));
+        exibirChat();
+        mensagemInput.value = "";
+    }
+}
+
+function enviarAudio() {
+    const usuarioAtual = JSON.parse(localStorage.getItem("usuarioAtual"));
+    if (!usuarioAtual || usuarioAtual.tipoUsuario !== "cliente") return;
+
+    navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(stream => {
+            const recorder = new MediaRecorder(stream);
+            const chunks = [];
+            recorder.start();
+            console.log("Gravando áudio..."); // Debug
+
+            setTimeout(() => {
+                recorder.stop();
+                stream.getTracks().forEach(track => track.stop());
+                console.log("Áudio parado após 5 segundos"); // Debug
+            }, 5000);
+
+            recorder.ondataavailable = e => chunks.push(e.data);
+            recorder.onstop = () => {
+                const blob = new Blob(chunks, { type: "audio/webm" });
+                const audioURL = URL.createObjectURL(blob);
+                const chaveChat = `${usuarioAtual.nome}-${lojaAtual}`;
+                if (!chatHistorico[chaveChat]) chatHistorico[chaveChat] = [];
+                chatHistorico[chaveChat].push({ autor: "cliente", conteudo: `<audio controls src="${audioURL}"></audio>` });
+                localStorage.setItem("chatHistorico", JSON.stringify(chatHistorico));
+                exibirChat();
+                console.log("Áudio salvo:", audioURL); // Debug
+            };
+        })
+        .catch(err => {
+            console.error("Erro ao gravar áudio:", err);
+            alert("Erro ao gravar áudio: " + err.message);
+        });
+}
+
+// Configurar Eventos do Chat
+document.addEventListener("DOMContentLoaded", function() {
+    const enviarMensagemBtn = document.getElementById("enviarMensagem");
+    const enviarAudioBtn = document.getElementById("enviarAudio");
+    if (enviarMensagemBtn) enviarMensagemBtn.onclick = enviarMensagem;
+    if (enviarAudioBtn) enviarAudioBtn.onclick = enviarAudio;
 });
