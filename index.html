@@ -3,37 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mercado do Bairro</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Bem-vindo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght=700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #333; /* Fundo escuro do chat */
+            font-family: 'Roboto', sans-serif;
+            border: 10px solid #50C878; /* Borda verde esmeralda */
+        }
+        .title {
+            font-size: 64px;
+            color: #ADFF2F; /* Verde claro vibrante do chat */
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 700;
+            animation: fadeIn 10s ease-in-out; /* Animação de 10 segundos */
+            text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.5); /* Contorno escuro */
+        }
+        .location {
+            font-size: 36px;
+            color: #DDA0DD; /* Roxo do chat */
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: 700;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5); /* Contorno escuro */
+        }
+        .developer {
+            font-size: 20px;
+            color: #ADFF2F; /* Verde claro */
+            text-align: center;
+            font-weight: 700;
+            opacity: 0.8; /* Leve transparência */
+            text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5); /* Contorno escuro */
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(-50px); }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Mercado do Bairro</h1>
-
-        <!-- Formulário de Cadastro -->
-        <h2>Cadastro</h2>
-        <form id="cadastroForm">
-            <input type="text" id="nome" placeholder="Nome" required>
-            <input type="text" id="endereco" placeholder="Endereço" required>
-            <input type="text" id="cep" placeholder="CEP (00000-000)" required>
-            <input type="text" id="telefone" placeholder="Telefone/WhatsApp" required>
-            <input type="password" id="senha" placeholder="Senha" required>
-            <select id="tipoUsuario" required>
-                <option value="">Selecione o tipo</option>
-                <option value="cliente">Cliente</option>
-                <option value="lojista">Lojista</option>
-            </select>
-            <button type="submit">Cadastrar</button>
-        </form>
-
-        <!-- Formulário de Login -->
-        <h2>Login</h2>
-        <form id="loginForm">
-            <input type="text" id="loginNome" placeholder="Nome" required>
-            <input type="password" id="loginSenha" placeholder="Senha" required>
-            <button type="submit">Entrar</button>
-        </form>
-    </div>
-    <script src="app.js"></script>
+    <div class="title">Bem-vindo ao Mercado do Bairro</div>
+    <div class="location">Sinop MT-Brasil</div>
+    <div class="developer">Sidnei Batista Correia - desenvolvedor</div>
+    <audio autoplay>
+        <source src="https://www.bensound.com/bensound-music/bensound-sweet.mp3" type="audio/mp3">
+    </audio>
+    <script>
+        setTimeout(() => {
+            window.location.href = "index.html";
+        }, 10000); // 10 segundos
+    </script>
 </body>
 </html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mercado do Bairro</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Mercado do Bairro</h1>
+
+        <!-- Formulário de Cadastro -->
+        <h2>Cadastro</h2>
+        <form id="cadastroForm">
+            <input type="text" id="nome" placeholder="Nome" required>
+            <input type="text" id="endereco" placeholder="Endereço" required>
+            <input type="text" id="cep" placeholder="CEP (00000-000)" required>
+            <input type="text" id="telefone" placeholder="Telefone/WhatsApp" required>
+            <input type="password" id="senha" placeholder="Senha" required>
+            <select id="tipoUsuario" required>
+                <option value="">Selecione o tipo</option>
+                <option value="cliente">Cliente</option>
+                <option value="lojista">Lojista</option>
+            </select>
+            <button type="submit">Cadastrar</button>
+        </form>
+
+        <!-- Formulário de Login -->
+        <h2>Login</h2>
+        <form id="loginForm">
+            <input type="text" id="loginNome" placeholder="Nome" required>
+            <input type="password" id="loginSenha" placeholder="Senha" required>
+            <button type="submit">Entrar</button>
+        </form>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
