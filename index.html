@@ -13,39 +13,48 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background-color: #333; /* Fundo escuro do chat */
+            background-color: #333;
             font-family: 'Roboto', sans-serif;
-            border: 10px solid #50C878; /* Borda verde esmeralda */
+            border: 10px solid #50C878;
         }
         .title {
             font-size: 64px;
-            color: #ADFF2F; /* Verde claro vibrante do chat */
+            color: #ADFF2F;
             text-align: center;
             margin-bottom: 20px;
             font-weight: 700;
-            animation: fadeIn 10s ease-in-out; /* Animação de 10 segundos */
-            text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.5); /* Contorno escuro */
+            text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.5);
         }
         .location {
             font-size: 36px;
-            color: #DDA0DD; /* Roxo do chat */
+            color: #DDA0DD;
             text-align: center;
             margin-bottom: 15px;
             font-weight: 700;
-            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5); /* Contorno escuro */
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
         }
         .developer {
             font-size: 20px;
-            color: #ADFF2F; /* Verde claro */
+            color: #ADFF2F;
             text-align: center;
+            margin-bottom: 30px;
             font-weight: 700;
-            opacity: 0.8; /* Leve transparência */
-            text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5); /* Contorno escuro */
+            opacity: 0.8;
+            text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
         }
-        @keyframes fadeIn {
-            0% { opacity: 0; transform: translateY(-50px); }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; transform: translateY(0); }
+        .enter-btn {
+            padding: 15px 30px;
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+            background-color: #ADFF2F;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+        }
+        .enter-btn:hover {
+            background-color: #DDA0DD;
         }
     </style>
 </head>
@@ -53,13 +62,9 @@
     <div class="title">Bem-vindo ao Mercado do Bairro</div>
     <div class="location">Sinop MT-Brasil</div>
     <div class="developer">Sidnei Batista Correia - desenvolvedor</div>
-    <audio autoplay>
-        <source src="https://www.bensound.com/bensound-music/bensound-sweet.mp3" type="audio/mp3">
+    <button class="enter-btn" onclick="window.location.href='old_index.html'">Entrar</button>
+    <audio autoplay loop>
+        <source src="welcome.mp3" type="audio/mp3">
     </audio>
-    <script>
-        setTimeout(() => {
-            window.location.href = "index.html";
-        }, 10000); // 10 segundos
-    </script>
 </body>
 </html>
