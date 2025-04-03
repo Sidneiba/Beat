@@ -10,7 +10,7 @@
 <body>
     <div class="container">
         <h1>Gestão de Estoque</h1>
-        <button onclick="window.location.href='index.html'"><i class="fas fa-arrow-left"></i> Voltar</button>
+        <button onclick="window.location.href='old_index.html'"><i class="fas fa-arrow-left"></i> Voltar</button>
 
         <!-- Adicionar Produto -->
         <h2>Adicionar Produto</h2>
@@ -27,8 +27,13 @@
         <div id="estoque"></div>
 
         <!-- Pedidos -->
-        <h2>Pedidos</h2>
-        <div id="pedidos"></div>
+        <div id="pedidos" class="history-frame"></div>
+        <button id="deleteHistoryBtn" class="delete-btn"><i class="fas fa-trash"></i> Deletar</button>
+        <div id="confirmDialog" class="confirm-dialog">
+            <p>Você quer realmente apagar esse registro?</p>
+            <button id="confirmYes">Sim</button>
+            <button id="confirmNo">Não</button>
+        </div>
 
         <!-- Mensagem Fixada -->
         <h2>Mensagem Fixada no Chat</h2>

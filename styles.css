@@ -94,3 +94,52 @@ button:hover {
     padding: 5px;
     margin: 5px;
 }
+
+/* Novo: Quadro de Histórico */
+.history-frame {
+    border: 1px solid #d8b2ff;
+    padding: 10px;
+    margin: 10px 0;
+    height: 100px; /* Tamanho pequeno */
+    overflow-y: auto; /* Rolagem */
+    transition: height 0.3s ease; /* Animação suave */
+    cursor: pointer;
+}
+
+.history-frame.expanded {
+    height: 300px; /* Tamanho expandido */
+}
+
+.history-item {
+    padding: 5px;
+    margin: 5px 0;
+    border-bottom: 1px solid #e6e6e6;
+}
+
+.history-item.selected {
+    background-color: #d8b2ff; /* Roxo claro pra marcar */
+}
+
+.delete-btn {
+    background-color: #ff3333;
+    display: none; /* Escondido até selecionar */
+    margin-top: 10px;
+}
+
+.confirm-dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    border: 2px solid #d8b2ff;
+    padding: 20px;
+    z-index: 1000;
+    display: none; /* Escondido até clicar em Deletar */
+}
+
+.confirm-dialog button {
+    width: 45%;
+    margin: 10px 2.5%;
+    display: inline-block;
+}

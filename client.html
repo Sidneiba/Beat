@@ -28,7 +28,13 @@
         <button onclick="realizarCheckout()"><i class="fas fa-check"></i> Finalizar Compra</button>
 
         <!-- Histórico de Compras -->
-        <div id="purchaseHistory"></div>
+        <div id="purchaseHistory" class="history-frame"></div>
+        <button id="deleteHistoryBtn" class="delete-btn"><i class="fas fa-trash"></i> Deletar</button>
+        <div id="confirmDialog" class="confirm-dialog">
+            <p>Você quer realmente apagar esse registro?</p>
+            <button id="confirmYes">Sim</button>
+            <button id="confirmNo">Não</button>
+        </div>
 
         <!-- Chat -->
         <h2>Chat com Lojista</h2>

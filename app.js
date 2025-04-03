@@ -120,7 +120,7 @@ function selecionarLoja() {
     exibirCatalogo();
     exibirCarrinho();
     exibirChat();
-    loadClientPurchases(); // Carrega histórico do cliente
+    loadClientPurchases();
 }
 
 // Catálogo de Produtos
@@ -217,39 +217,40 @@ function realizarCheckout() {
     localStorage.setItem("carrinho", JSON.stringify(carrinho));
     alert("Compra finalizada! Use o chat para ajustar os detalhes com o lojista.");
     exibirCarrinho();
-    loadClientPurchases(); // Atualiza histórico do cliente
+    loadClientPurchases();
 }
 
 // Histórico de Compras - Cliente
 function loadClientPurchases() {
-    const historyDiv = document.getElementById("purchaseHistory");
-    if (!historyDiv) return;
+    const historyFrame = document.getElementById("purchaseHistory");
+    if (!historyFrame) return;
 
     const usuarioAtual = JSON.parse(localStorage.getItem("usuarioAtual"));
     const clientPurchases = pedidos.filter(p => p.cliente === usuarioAtual.nome);
-    historyDiv.innerHTML = "<h2>Seu Histórico de Compras</h2>";
+    historyFrame.innerHTML = "<h2>Seu Histórico de Compras</h2>";
     clientPurchases.forEach(p => {
-        historyDiv.innerHTML += `
-            <div class="produto">
+        historyFrame.innerHTML += `
+            <div class="history-item" data-id="${p.id}">
                 <h3>Pedido #${p.id} - ${p.data}</h3>
                 <p>Itens: ${p.itens.map(i => `${i.nome} (${i.quantidade}x R$${i.preco})`).join(", ")}</p>
                 <p>Total: R$ ${p.total.toFixed(2)}</p>
             </div>
         `;
     });
+    addHistoryListeners(historyFrame);
 }
 
 // Histórico de Compras - Lojista
 function exibirPedidos() {
-    const pedidosDiv = document.getElementById("pedidos");
-    if (!pedidosDiv) return;
+    const pedidosFrame = document.getElementById("pedidos");
+    if (!pedidosFrame) return;
 
     const usuario = JSON.parse(localStorage.getItem("usuarioAtual"));
     const pedidosLoja = pedidos.filter(p => p.loja === usuario.nome);
-    pedidosDiv.innerHTML = "";
+    pedidosFrame.innerHTML = "<h2>Pedidos</h2>";
     pedidosLoja.forEach((pedido, index) => {
-        pedidosDiv.innerHTML += `
-            <div class="produto">
+        pedidosFrame.innerHTML += `
+            <div class="history-item" data-id="${pedido.id}">
                 <h3>Pedido #${pedido.id} - ${pedido.data}</h3>
                 <p>Cliente: ${pedido.cliente}</p>
                 <p>Endereço: ${pedido.endereco} (CEP: ${pedido.cep})</p>
@@ -260,6 +261,60 @@ function exibirPedidos() {
                 <button onclick="openChat('${pedido.cliente}')"><i class="fas fa-comments"></i> Chat</button>
             </div>
         `;
+    });
+    addHistoryListeners(pedidosFrame);
+}
+
+// Adicionar Listeners ao Histórico
+function addHistoryListeners(frame) {
+    const items = frame.querySelectorAll(".history-item");
+    const deleteBtn = document.getElementById("deleteHistoryBtn");
+    const confirmDialog = document.getElementById("confirmDialog");
+    let selectedId = null;
+
+    frame.addEventListener("click", () => {
+        frame.classList.toggle("expanded");
+    });
+
+    items.forEach(item => {
+        item.addEventListener("click", (e) => {
+            e.stopPropagation(); // Evita expandir ao clicar no item
+            if (selectedId === item.dataset.id) {
+                item.classList.remove("selected");
+                selectedId = null;
+                deleteBtn.style.display = "none";
+            } else {
+                items.forEach(i => i.classList.remove("selected"));
+                item.classList.add("selected");
+                selectedId = item.dataset.id;
+                deleteBtn.style.display = "block";
+            }
+        });
+    });
+
+    deleteBtn.addEventListener("click", () => {
+        confirmDialog.style.display = "block";
+    });
+
+    document.getElementById("confirmYes").addEventListener("click", () => {
+        const usuarioAtual = JSON.parse(localStorage.getItem("usuarioAtual"));
+        if (usuarioAtual.tipoUsuario === "cliente") {
+            pedidos = pedidos.filter(p => p.cliente !== usuarioAtual.nome || p.id !== parseInt(selectedId));
+        } else {
+            pedidos = pedidos.filter(p => p.loja !== usuarioAtual.nome || p.id !== parseInt(selectedId));
+        }
+        localStorage.setItem("pedidos", JSON.stringify(pedidos));
+        confirmDialog.style.display = "none";
+        deleteBtn.style.display = "none";
+        selectedId = null;
+        usuarioAtual.tipoUsuario === "cliente" ? loadClientPurchases() : exibirPedidos();
+    });
+
+    document.getElementById("confirmNo").addEventListener("click", () => {
+        confirmDialog.style.display = "none";
+        items.forEach(i => i.classList.remove("selected"));
+        deleteBtn.style.display = "none";
+        selectedId = null;
     });
 }
 
@@ -373,7 +428,7 @@ function listarClientesChat() {
     if (!clienteSelect) return;
 
     const usuarioAtual = JSON.parse(localStorage.getItem("usuarioAtual"));
-    const clientes = pedidos.filter(p => p.loja === usuarioAtual.nome).map(p => p.cliente);
+    const clientes = pedidos.filter(p => p.loja === usuario.nome).map(p => p.cliente);
     const clientesUnicos = [...new Set(clientes)];
     clienteSelect.innerHTML = "<option value=''>Selecione um cliente</option>";
     clientesUnicos.forEach(cliente => {
@@ -429,5 +484,5 @@ document.addEventListener("DOMContentLoaded", function() {
     exibirEstoque();
     exibirPedidos();
     listarClientesChat();
-    loadClientPurchases(); // Carrega histórico do cliente ao entrar
+    loadClientPurchases();
 });
