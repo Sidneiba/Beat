@@ -24,6 +24,7 @@
             margin-bottom: 20px;
             font-weight: 700;
             text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 2s ease-in-out;
         }
         .location {
             font-size: 36px;
@@ -32,6 +33,7 @@
             margin-bottom: 15px;
             font-weight: 700;
             text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 2.5s ease-in-out;
         }
         .developer {
             font-size: 20px;
@@ -41,6 +43,7 @@
             font-weight: 700;
             opacity: 0.8;
             text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 3s ease-in-out;
         }
         .enter-btn {
             padding: 15px 30px;
@@ -52,9 +55,14 @@
             border-radius: 10px;
             cursor: pointer;
             text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 3.5s ease-in-out;
         }
         .enter-btn:hover {
             background-color: #DDA0DD;
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(-50px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
