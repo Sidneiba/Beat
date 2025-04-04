@@ -271,25 +271,31 @@ function addHistoryListeners(frame) {
     const deleteBtn = document.getElementById("deleteHistoryBtn");
     const confirmDialog = document.getElementById("confirmDialog");
     let selectedId = null;
+    let timeoutId = null;
 
     frame.addEventListener("click", () => {
         frame.classList.toggle("expanded");
     });
 
     items.forEach(item => {
-        item.addEventListener("click", (e) => {
-            e.stopPropagation(); // Evita expandir ao clicar no item
-            if (selectedId === item.dataset.id) {
-                item.classList.remove("selected");
-                selectedId = null;
-                deleteBtn.style.display = "none";
-            } else {
-                items.forEach(i => i.classList.remove("selected"));
-                item.classList.add("selected");
-                selectedId = item.dataset.id;
-                deleteBtn.style.display = "block";
-            }
+        item.addEventListener("mousedown", (e) => {
+            e.stopPropagation();
+            timeoutId = setTimeout(() => {
+                if (selectedId === item.dataset.id) {
+                    item.classList.remove("selected");
+                    selectedId = null;
+                    deleteBtn.style.display = "none";
+                } else {
+                    items.forEach(i => i.classList.remove("selected"));
+                    item.classList.add("selected");
+                    selectedId = item.dataset.id;
+                    deleteBtn.style.display = "block";
+                }
+            }, 500); // 0,5s
         });
+
+        item.addEventListener("mouseup", () => clearTimeout(timeoutId));
+        item.addEventListener("mouseleave", () => clearTimeout(timeoutId));
     });
 
     deleteBtn.addEventListener("click", () => {
@@ -326,7 +332,7 @@ function confirmarPedido(index) {
     localStorage.setItem("pedidos", JSON.stringify(pedidos));
     const chaveChat = `${pedidosLoja[index].cliente}-${usuario.nome}`;
     if (!chatHistorico[chaveChat]) chatHistorico[chaveChat] = [];
-    chatHistorico[chaveChat].push({ autor: "lojista", conteudo: "Pedido confirmado!" });
+    chatHistorico[chaveChat].push({ autor: "lojista", conteudo: "Pedido confirmado!", timestamp: Date.now() });
     localStorage.setItem("chatHistorico", JSON.stringify(chatHistorico));
     exibirPedidos();
     exibirChat();
@@ -350,7 +356,7 @@ function exibirChat() {
     if (chaveChat && chatHistorico[chaveChat]) {
         chatDiv.innerHTML += chatHistorico[chaveChat].map(msg => {
             const classe = msg.autor === "cliente" ? "mensagem-cliente" : "mensagem-lojista";
-            return `<div class="${classe}">${msg.conteudo}</div>`;
+            return `<div class="${classe}">${msg.conteudo} (${new Date(msg.timestamp).toLocaleTimeString()})</div>`;
         }).join("");
     }
     chatDiv.scrollTop = chatDiv.scrollHeight;
@@ -371,11 +377,15 @@ function enviarMensagem() {
         const clienteSelecionado = document.getElementById("clienteChat")?.value;
         chaveChat = clienteSelecionado ? `${clienteSelecionado}-${usuarioAtual.nome}` : null;
         autor = "lojista";
+        if (!podeLojistaEnviar(chaveChat, clienteSelecionado)) {
+            alert("Você só pode responder clientes que compraram ou iniciaram contato nas últimas 24h!");
+            return;
+        }
     }
 
     if (chaveChat) {
         if (!chatHistorico[chaveChat]) chatHistorico[chaveChat] = [];
-        chatHistorico[chaveChat].push({ autor, conteudo: mensagem });
+        chatHistorico[chaveChat].push({ autor, conteudo: mensagem, timestamp: Date.now() });
         localStorage.setItem("chatHistorico", JSON.stringify(chatHistorico));
         exibirChat();
         mensagemInput.value = "";
@@ -383,8 +393,27 @@ function enviarMensagem() {
 }
 
 function openChat(cliente) {
+    const usuarioAtual = JSON.parse(localStorage.getItem("usuarioAtual"));
+    if (usuarioAtual.tipoUsuario === "lojista" && !podeLojistaEnviar(`${cliente}-${usuarioAtual.nome}`, cliente)) {
+        alert("Você só pode abrir chat com clientes que compraram ou iniciaram contato nas últimas 24h!");
+        return;
+    }
     document.getElementById("clienteChat").value = cliente;
     exibirChat();
+}
+
+function podeLojistaEnviar(chaveChat, cliente) {
+    const usuarioAtual = JSON.parse(localStorage.getItem("usuarioAtual"));
+    const temCompra = pedidos.some(p => p.loja === usuarioAtual.nome && p.cliente === cliente);
+    const historico = chatHistorico[chaveChat] || [];
+    const ultimaMensagemCliente = historico.filter(m => m.autor === "cliente").pop();
+    if (!temCompra && !ultimaMensagemCliente) return false;
+    if (ultimaMensagemCliente) {
+        const agora = Date.now();
+        const limite = 24 * 60 * 60 * 1000; // 24h em milissegundos
+        return (agora - ultimaMensagemCliente.timestamp) <= limite;
+    }
+    return temCompra;
 }
 
 function enviarAudio() {
@@ -406,7 +435,7 @@ function enviarAudio() {
                 const audioURL = URL.createObjectURL(blob);
                 const chaveChat = `${usuarioAtual.nome}-${lojaAtual}`;
                 if (!chatHistorico[chaveChat]) chatHistorico[chaveChat] = [];
-                chatHistorico[chaveChat].push({ autor: "cliente", conteudo: `<audio controls src="${audioURL}"></audio>` });
+                chatHistorico[chaveChat].push({ autor: "cliente", conteudo: `<audio controls src="${audioURL}"></audio>`, timestamp: Date.now() });
                 localStorage.setItem("chatHistorico", JSON.stringify(chatHistorico));
                 exibirChat();
             };
@@ -428,7 +457,7 @@ function listarClientesChat() {
     if (!clienteSelect) return;
 
     const usuarioAtual = JSON.parse(localStorage.getItem("usuarioAtual"));
-    const clientes = pedidos.filter(p => p.loja === usuario.nome).map(p => p.cliente);
+    const clientes = pedidos.filter(p => p.loja === usuarioAtual.nome).map(p => p.cliente);
     const clientesUnicos = [...new Set(clientes)];
     clienteSelect.innerHTML = "<option value=''>Selecione um cliente</option>";
     clientesUnicos.forEach(cliente => {
@@ -469,9 +498,18 @@ function exibirEstoque() {
                 <p>${produto.descricao}</p>
                 <p>Preço: R$ ${produto.preco}</p>
                 <p>Quantidade: ${produto.quantidade}</p>
+                <button class="remover-btn" onclick="removerProduto(${produto.id})"><i class="fas fa-trash"></i> Excluir</button>
             </div>
         `;
     });
+}
+
+// Remover Produto do Estoque
+function removerProduto(produtoId) {
+    const usuario = JSON.parse(localStorage.getItem("usuarioAtual"));
+    produtos[usuario.nome] = produtos[usuario.nome].filter(p => p.id !== produtoId);
+    localStorage.setItem("produtos", JSON.stringify(produtos));
+    exibirEstoque();
 }
 
 // Inicializar páginas
