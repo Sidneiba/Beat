@@ -100,14 +100,14 @@ button:hover {
     border: 1px solid #d8b2ff;
     padding: 10px;
     margin: 10px 0;
-    height: 100px; /* Tamanho pequeno */
-    overflow-y: auto; /* Rolagem */
-    transition: height 0.3s ease; /* Animação suave */
+    height: 100px;
+    overflow-y: auto;
+    transition: height 0.3s ease;
     cursor: pointer;
 }
 
 .history-frame.expanded {
-    height: 300px; /* Tamanho expandido */
+    height: 300px;
 }
 
 .history-item {
@@ -117,12 +117,12 @@ button:hover {
 }
 
 .history-item.selected {
-    background-color: #d8b2ff; /* Roxo claro pra marcar */
+    background-color: #d8b2ff;
 }
 
 .delete-btn {
     background-color: #ff3333;
-    display: none; /* Escondido até selecionar */
+    display: none;
     margin-top: 10px;
 }
 
@@ -135,11 +135,24 @@ button:hover {
     border: 2px solid #d8b2ff;
     padding: 20px;
     z-index: 1000;
-    display: none; /* Escondido até clicar em Deletar */
+    display: none;
 }
 
 .confirm-dialog button {
     width: 45%;
     margin: 10px 2.5%;
     display: inline-block;
+}
+
+/* Estoque em Linha */
+.estoque-lista {
+    font-family: monospace; /* Tipo caderno */
+}
+
+.estoque-item {
+    padding: 5px;
+    margin: 5px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }

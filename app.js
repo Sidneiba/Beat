@@ -26,16 +26,11 @@ const clienteSimulacao = {
 };
 
 const catalogoSimulacao = [
-    { id: 1, nome: "Arroz", tipo: "Alimento", preco: 5.99, marca: "Tio João", quantidade: 50, descricao: "Arroz branco 5kg" },
-    { id: 2, nome: "Feijão", tipo: "Alimento", preco: 7.50, marca: "Camil", quantidade: 40, descricao: "Feijão preto 1kg" },
-    { id: 3, nome: "Macarrão", tipo: "Alimento", preco: 3.20, marca: "Renata", quantidade: 60, descricao: "Espaguete 500g" },
-    { id: 4, nome: "Leite", tipo: "Bebida", preco: 4.80, marca: "Itambé", quantidade: 30, descricao: "Leite integral 1L" },
-    { id: 5, nome: "Coca-Cola", tipo: "Bebida", preco: 6.99, marca: "Coca-Cola", quantidade: 25, descricao: "Refrigerante 2L" },
-    { id: 6, nome: "Sabonete", tipo: "Higiene", preco: 2.10, marca: "Dove", quantidade: 70, descricao: "Sabonete em barra 90g" },
-    { id: 7, nome: "Shampoo", tipo: "Higiene", preco: 12.90, marca: "Seda", quantidade: 20, descricao: "Shampoo 325ml" },
-    { id: 8, nome: "Detergente", tipo: "Limpeza", preco: 1.99, marca: "Ypê", quantidade: 80, descricao: "Detergente líquido 500ml" },
-    { id: 9, nome: "Papel Higiênico", tipo: "Higiene", preco: 8.50, marca: "Neve", quantidade: 35, descricao: "Pacote com 4 rolos" },
-    { id: 10, nome: "Biscoito", tipo: "Alimento", preco: 3.50, marca: "Nestlé", quantidade: 45, descricao: "Biscoito recheado 140g" }
+    { id: 1, nome: "Arroz", tipo: "Branco", volume: "5kg", marca: "Tio João", codigo: "COD101", quantidade: 50, preco: 5.99 },
+    { id: 2, nome: "Feijão", tipo: "Preto", volume: "1kg", marca: "Camil", codigo: "COD102", quantidade: 40, preco: 7.50 },
+    { id: 3, nome: "Macarrão", tipo: "Espaguete", volume: "500g", marca: "Renata", codigo: "COD103", quantidade: 60, preco: 3.20 },
+    { id: 4, nome: "Leite", tipo: "Integral", volume: "1L", marca: "Itambé", codigo: "COD104", quantidade: 30, preco: 4.80 },
+    { id: 5, nome: "Coca-Cola", tipo: "Refrigerante", volume: "2L", marca: "Coca-Cola", codigo: "COD105", quantidade: 25, preco: 6.99 }
 ];
 
 // Inicializar Simulação
@@ -135,6 +130,7 @@ function exibirCatalogo() {
             <div class="produto">
                 <h3>${produto.nome}</h3>
                 <p>Tipo: ${produto.tipo}</p>
+                <p>Volume: ${produto.volume}</p>
                 <p>Marca: ${produto.marca}</p>
                 <p>Preço: R$ ${produto.preco}</p>
                 <button onclick="adicionarCarrinho(${produto.id})"><i class="fas fa-plus"></i> Adicionar</button>
@@ -240,7 +236,7 @@ function loadClientPurchases() {
     addHistoryListeners(historyFrame);
 }
 
-// Histórico de Compras - Lojista
+// Histórico de Compras - Lojista (Caixa)
 function exibirPedidos() {
     const pedidosFrame = document.getElementById("pedidos");
     if (!pedidosFrame) return;
@@ -298,11 +294,11 @@ function addHistoryListeners(frame) {
         item.addEventListener("mouseleave", () => clearTimeout(timeoutId));
     });
 
-    deleteBtn.addEventListener("click", () => {
+    deleteBtn?.addEventListener("click", () => {
         confirmDialog.style.display = "block";
     });
 
-    document.getElementById("confirmYes").addEventListener("click", () => {
+    document.getElementById("confirmYes")?.addEventListener("click", () => {
         const usuarioAtual = JSON.parse(localStorage.getItem("usuarioAtual"));
         if (usuarioAtual.tipoUsuario === "cliente") {
             pedidos = pedidos.filter(p => p.cliente !== usuarioAtual.nome || p.id !== parseInt(selectedId));
@@ -316,7 +312,7 @@ function addHistoryListeners(frame) {
         usuarioAtual.tipoUsuario === "cliente" ? loadClientPurchases() : exibirPedidos();
     });
 
-    document.getElementById("confirmNo").addEventListener("click", () => {
+    document.getElementById("confirmNo")?.addEventListener("click", () => {
         confirmDialog.style.display = "none";
         items.forEach(i => i.classList.remove("selected"));
         deleteBtn.style.display = "none";
@@ -457,7 +453,7 @@ function listarClientesChat() {
     if (!clienteSelect) return;
 
     const usuarioAtual = JSON.parse(localStorage.getItem("usuarioAtual"));
-    const clientes = pedidos.filter(p => p.loja === usuarioAtual.nome).map(p => p.cliente);
+    const clientes = pedidos.filter(p => p.loja === usuario.nome).map(p => p.cliente);
     const clientesUnicos = [...new Set(clientes)];
     clienteSelect.innerHTML = "<option value=''>Selecione um cliente</option>";
     clientesUnicos.forEach(cliente => {
@@ -470,12 +466,15 @@ document.getElementById("produtoForm")?.addEventListener("submit", function(e) {
     e.preventDefault();
     const usuario = JSON.parse(localStorage.getItem("usuarioAtual"));
     const nome = document.getElementById("nomeProduto").value;
-    const descricao = document.getElementById("descricao").value;
-    const preco = parseFloat(document.getElementById("preco").value);
-    const quantidade = parseInt(document.getElementById("quantidade").value);
+    const tipo = document.getElementById("tipoProduto").value;
+    const volume = document.getElementById("volumeProduto").value;
+    const marca = document.getElementById("marcaProduto").value;
+    const codigo = document.getElementById("codigoProduto").value;
+    const quantidade = parseInt(document.getElementById("quantidadeProduto").value);
+    const preco = parseFloat(document.getElementById("precoProduto").value);
 
     if (!produtos[usuario.nome]) produtos[usuario.nome] = [];
-    const produto = { id: Date.now(), nome, descricao, preco, quantidade };
+    const produto = { id: Date.now(), nome, tipo, volume, marca, codigo, quantidade, preco };
     produtos[usuario.nome].push(produto);
     localStorage.setItem("produtos", JSON.stringify(produtos));
     alert("Produto adicionado!");
@@ -490,18 +489,16 @@ function exibirEstoque() {
 
     const usuario = JSON.parse(localStorage.getItem("usuarioAtual"));
     const produtosLoja = produtos[usuario.nome] || [];
-    estoque.innerHTML = "";
+    estoque.innerHTML = "<h2>Estoque</h2><div class='estoque-lista'>";
     produtosLoja.forEach(produto => {
         estoque.innerHTML += `
-            <div class="produto">
-                <h3>${produto.nome}</h3>
-                <p>${produto.descricao}</p>
-                <p>Preço: R$ ${produto.preco}</p>
-                <p>Quantidade: ${produto.quantidade}</p>
+            <div class="estoque-item">
+                [${produto.nome}] [${produto.tipo}] [${produto.volume}] [${produto.marca}] [${produto.codigo}] [Qtd ${produto.quantidade}]
                 <button class="remover-btn" onclick="removerProduto(${produto.id})"><i class="fas fa-trash"></i> Excluir</button>
             </div>
         `;
     });
+    estoque.innerHTML += "</div>";
 }
 
 // Remover Produto do Estoque
