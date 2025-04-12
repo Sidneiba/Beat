@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - Mercado do Bairro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container animate-slide">
+        <h1>Cadastro</h1>
+        <form id="cadastroForm">
+            <input type="text" id="nome" placeholder="Nome de usuário" required>
+            <input type="text" id="endereco" placeholder="Endereço" required>
+            <input type="text" id="cep" placeholder="CEP (ex.: 12345-678)" required>
+            <input type="text" id="telefone" placeholder="Telefone (ex.: 66912345678)" required>
+            <input type="password" id="senha" placeholder="Senha" required>
+            <select id="tipoUsuario" required>
+                <option value="">Selecione o tipo de usuário</option>
+                <option value="cliente">Cliente</option>
+                <option value="lojista">Lojista</option>
+            </select>
+            <button type="submit" class="btn-3d">Cadastrar</button>
+        </form>
+        <p>Já tem conta? <a href="login.html">Faça login</a></p>
+    </div>
+    <script src="js/app.js"></script>
+</body>
+</html>

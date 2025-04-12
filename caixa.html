@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caixa - Mercado do Bairro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html"><i class="fas fa-home"></i> Início</a>
+        <a href="stock.html"><i class="fas fa-warehouse"></i> Estoque</a>
+        <a href="caixa.html"><i class="fas fa-cash-register"></i> Caixa</a>
+        <a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Sair</a>
+    </nav>
+    <div class="container animate-slide">
+        <h1><i class="fas fa-cash-register"></i> Caixa</h1>
+        <h2>Histórico de Vendas</h2>
+        <div id="vendas" class="history-frame"></div>
+        <button class="btn-3d delete-btn" onclick="confirmarDeletarVendas()">
+            <i class="fas fa-trash"></i> Deletar Histórico
+        </button>
+        <div id="confirmDialog" class="confirm-dialog" style="display: none;">
+            <p>Você quer realmente apagar o histórico?</p>
+            <button class="btn-3d" onclick="deletarVendas()">Sim</button>
+            <button class="btn-3d" onclick="cancelarDeletar()">Não</button>
+        </div>
+        <h2>Mensagem Fixada</h2>
+        <input type="text" id="mensagemFixada" placeholder="Ex.: Pagamento via Pix: 12345">
+        <button class="btn-3d" onclick="salvarMensagemFixada()">
+            <i class="fas fa-thumbtack"></i> Salvar
+        </button>
+        <h2>Chat com Clientes</h2>
+        <select id="clienteChat" onchange="exibirChat()">
+            <option value="">Selecione um cliente</option>
+        </select>
+        <div id="chat" class="chat-box"></div>
+        <input type="text" id="mensagemInput" placeholder="Digite sua resposta">
+        <button class="btn-3d" id="enviarMensagem">
+            <i class="fas fa-paper-plane"></i> Enviar
+        </button>
+    </div>
+    <script src="js/app.js"></script>
+</body>
+</html>
