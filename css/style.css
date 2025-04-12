@@ -4,8 +4,8 @@
     box-sizing: border-box;
 }
 body {
-    font-family: 'Poppins', sans-serif;
-    background-color: #e6ffe6;
+    font-family: 'Handjet', sans-serif;
+    background-color: #f5f5f5;
 }
 body.intro {
     margin: 0;
@@ -18,21 +18,38 @@ body.intro {
     border: 10px solid #50C878;
 }
 .container {
-    max-width: 600px;
+    max-width: 800px;
     margin: 20px auto;
     padding: 20px;
     background: white;
     border-radius: 15px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
+.notebook {
+    background: #fffef7;
+    border: 2px solid #ccc;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+.notebook::before {
+    content: '';
+    position: absolute;
+    left: 30px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #ff9999;
+}
 h1 {
     color: #006600;
     text-align: center;
     margin-bottom: 20px;
+    font-size: 2em;
 }
 h2 {
     color: #006600;
     margin: 20px 0 10px;
+    font-size: 1.5em;
 }
 input, select {
     width: 100%;
@@ -40,7 +57,8 @@ input, select {
     padding: 12px;
     border: 2px solid #50C878;
     border-radius: 8px;
-    font-size: 16px;
+    font-family: 'Handjet', sans-serif;
+    font-size: 1.2em;
     transition: border-color 0.3s;
 }
 input:focus, select:focus {
@@ -54,7 +72,8 @@ input:focus, select:focus {
     color: white;
     border: none;
     border-radius: 8px;
-    font-size: 16px;
+    font-family: 'Handjet', sans-serif;
+    font-size: 1.2em;
     font-weight: bold;
     cursor: pointer;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
@@ -143,18 +162,28 @@ input:focus, select:focus {
 .logout-btn:hover {
     background-color: #e60000;
 }
-.estoque-lista, .history-frame {
+.notebook-table table {
+    width: 100%;
+    border-collapse: collapse;
     margin-top: 10px;
+    background: #fffef7;
 }
-.estoque-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    margin: 5px 0;
-    background: #f9f9f9;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.notebook-table th, .notebook-table td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: left;
+    font-size: 1.1em;
+}
+.notebook-table th {
+    background: #e0e0e0;
+    color: #333;
+    font-weight: bold;
+}
+.notebook-table tr:nth-child(even) {
+    background: #f7f7f7;
+}
+.notebook-table tr:hover {
+    background: #e6ffe6;
 }
 .estoque-item button {
     background: linear-gradient(135deg, #50C878, #ADFF2F);
@@ -163,6 +192,7 @@ input:focus, select:focus {
     padding: 5px 10px;
     border-radius: 5px;
     cursor: pointer;
+    font-family: 'Handjet', sans-serif;
 }
 .estoque-item button:hover {
     background: linear-gradient(135deg, #ADFF2F, #50C878);
@@ -174,11 +204,12 @@ input:focus, select:focus {
     background: #e60000;
 }
 .estoque-baixo {
-    background: #ffe6e6;
+    background: #ffe6e6 !important;
 }
 .total {
     margin: 15px 0;
     text-align: right;
+    font-size: 1.2em;
 }
 .history-frame {
     max-height: 200px;
@@ -186,6 +217,7 @@ input:focus, select:focus {
     border: 1px solid #ccc;
     padding: 10px;
     border-radius: 8px;
+    background: #fffef7;
 }
 .delete-btn {
     background: #ff4d4d;
@@ -214,6 +246,7 @@ input:focus, select:focus {
     padding: 10px;
     border-radius: 8px;
     margin-bottom: 10px;
+    background: #fffef7;
 }
 .mensagem {
     margin: 5px 0;

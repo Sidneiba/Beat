@@ -71,7 +71,7 @@ document.getElementById("produtoForm")?.addEventListener("submit", (e) => {
         id: Date.now(),
         nome: document.getElementById("nomeProduto").value.trim(),
         tipo: document.getElementById("tipoProduto").value.trim(),
-        volume: document.getElementById("volumeProduto").value.trim(),
+        unidade: document.getElementById("unidadeProduto").value.trim(),
         marca: document.getElementById("marcaProduto").value.trim(),
         codigo: codigo,
         quantidade: parseInt(document.getElementById("quantidadeProduto").value),
@@ -93,16 +93,40 @@ function exibirEstoque() {
     totalDiv.style.fontWeight = "bold";
     totalDiv.style.marginBottom = "10px";
     estoqueDiv.appendChild(totalDiv);
+
+    const table = document.createElement("table");
+    table.innerHTML = `
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Tipo</th>
+                <th>Marca</th>
+                <th>Unidade</th>
+                <th>Código</th>
+                <th>Quantidade</th>
+                <th>Preço</th>
+                <th>Ação</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    `;
+    const tbody = table.querySelector("tbody");
     produtos.forEach(produto => {
-        const item = document.createElement("div");
-        item.className = `estoque-item ${produto.quantidade < 5 ? 'estoque-baixo' : ''}`;
-        item.innerHTML = `
-            ${produto.nome} (${produto.tipo}, ${produto.volume}, ${produto.marca}, ${produto.codigo}) - 
-            Qtd: ${produto.quantidade} - R$${produto.preco.toFixed(2)}
-            <button class="trash" onclick="removerProduto(${produto.id})"><i class="fas fa-trash"></i></button>
+        const row = document.createElement("tr");
+        row.className = `estoque-item ${produto.quantidade < 5 ? 'estoque-baixo' : ''}`;
+        row.innerHTML = `
+            <td>${produto.nome}</td>
+            <td>${produto.tipo}</td>
+            <td>${produto.marca}</td>
+            <td>${produto.unidade}</td>
+            <td>${produto.codigo}</td>
+            <td>${produto.quantidade}</td>
+            <td>R$${produto.preco.toFixed(2)}</td>
+            <td><button class="trash" onclick="removerProduto(${produto.id})"><i class="fas fa-trash"></i></button></td>
         `;
-        estoqueDiv.appendChild(item);
+        tbody.appendChild(row);
     });
+    estoqueDiv.appendChild(table);
 }
 
 function removerProduto(id) {
@@ -126,20 +150,41 @@ function exibirCatalogo() {
     const catalogoDiv = document.getElementById("catalogo");
     if (!catalogoDiv) return;
     catalogoDiv.innerHTML = "";
+    const table = document.createElement("table");
+    table.innerHTML = `
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Tipo</th>
+                <th>Marca</th>
+                <th>Unidade</th>
+                <th>Código</th>
+                <th>Quantidade</th>
+                <th>Preço</th>
+                <th>Ação</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    `;
+    const tbody = table.querySelector("tbody");
     produtos.forEach(produto => {
         if (produto.quantidade > 0) {
-            const item = document.createElement("div");
-            item.className = "estoque-item";
-            item.innerHTML = `
-                ${produto.nome} (${produto.tipo}, ${produto.volume}, ${produto.marca}) - 
-                R$${produto.preco.toFixed(2)} - Estoque: ${produto.quantidade}
-                <button onclick="adicionarAoCarrinho(${produto.id})">
-                    <i class="fas fa-cart-plus"></i> Adicionar
-                </button>
+            const row = document.createElement("tr");
+            row.className = "estoque-item";
+            row.innerHTML = `
+                <td>${produto.nome}</td>
+                <td>${produto.tipo}</td>
+                <td>${produto.marca}</td>
+                <td>${produto.unidade}</td>
+                <td>${produto.codigo}</td>
+                <td>${produto.quantidade}</td>
+                <td>R$${produto.preco.toFixed(2)}</td>
+                <td><button onclick="adicionarAoCarrinho(${produto.id})"><i class="fas fa-cart-plus"></i> Adicionar</button></td>
             `;
-            catalogoDiv.appendChild(item);
+            tbody.appendChild(row);
         }
     });
+    catalogoDiv.appendChild(table);
 }
 
 function adicionarAoCarrinho(id) {
@@ -171,20 +216,38 @@ function exibirCarrinho() {
     if (!carrinhoDiv || !totalSpan) return;
     carrinhoDiv.innerHTML = "";
     let total = 0;
+    const table = document.createElement("table");
+    table.innerHTML = `
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Quantidade</th>
+                <th>Preço Unitário</th>
+                <th>Subtotal</th>
+                <th>Ação</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    `;
+    const tbody = table.querySelector("tbody");
     carrinho.forEach(item => {
         const produto = produtos.find(p => p.id === item.id);
         if (produto) {
             const subtotal = item.quantidade * item.preco;
             total += subtotal;
-            const div = document.createElement("div");
-            div.className = "estoque-item";
-            div.innerHTML = `
-                ${item.nome} - Qtd: ${item.quantidade} - R$${subtotal.toFixed(2)}
-                <button class="trash" onclick="removerDoCarrinho(${item.id})"><i class="fas fa-trash"></i></button>
+            const row = document.createElement("tr");
+            row.className = "estoque-item";
+            row.innerHTML = `
+                <td>${item.nome}</td>
+                <td>${item.quantidade}</td>
+                <td>R$${item.preco.toFixed(2)}</td>
+                <td>R$${subtotal.toFixed(2)}</td>
+                <td><button class="trash" onclick="removerDoCarrinho(${item.id})"><i class="fas fa-trash"></i></button></td>
             `;
-            carrinhoDiv.appendChild(div);
+            tbody.appendChild(row);
         }
     });
+    carrinhoDiv.appendChild(table);
     totalSpan.textContent = total.toFixed(2);
 }
 
@@ -237,17 +300,30 @@ function exibirHistorico() {
     const usuario = JSON.parse(localStorage.getItem("usuarioAtual"));
     let historico = JSON.parse(localStorage.getItem("historicoCompras")) || {};
     if (historico[usuario.nome]) {
+        const table = document.createElement("table");
+        table.innerHTML = `
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Itens</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        `;
+        const tbody = table.querySelector("tbody");
         historico[usuario.nome].forEach(compra => {
-            const div = document.createElement("div");
-            div.className = "estoque-item";
-            let itensHtml = compra.itens.map(item => `${item.nome} - Qtd: ${item.quantidade}`).join("<br>");
-            div.innerHTML = `
-                Compra em ${compra.data}<br>
-                Itens:<br>${itensHtml}<br>
-                Total: R$${compra.total.toFixed(2)}
+            const row = document.createElement("tr");
+            row.className = "estoque-item";
+            let itens = compra.itens.map(item => `${item.nome} (Qtd: ${item.quantidade})`).join(", ");
+            row.innerHTML = `
+                <td>${compra.data}</td>
+                <td>${itens}</td>
+                <td>R$${compra.total.toFixed(2)}</td>
             `;
-            historicoDiv.appendChild(div);
+            tbody.appendChild(row);
         });
+        historicoDiv.appendChild(table);
     }
 }
 
@@ -275,18 +351,32 @@ function exibirVendas() {
     if (!vendasDiv) return;
     vendasDiv.innerHTML = "";
     let vendas = JSON.parse(localStorage.getItem("vendas")) || [];
+    const table = document.createElement("table");
+    table.innerHTML = `
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Cliente</th>
+                <th>Itens</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    `;
+    const tbody = table.querySelector("tbody");
     vendas.forEach(venda => {
-        const div = document.createElement("div");
-        div.className = "estoque-item";
-        let itensHtml = venda.itens.map(item => `${item.nome} - Qtd: ${item.quantidade}`).join("<br>");
-        div.innerHTML = `
-            Venda em ${venda.data}<br>
-            Cliente: ${venda.cliente}<br>
-            Itens:<br>${itensHtml}<br>
-            Total: R$${venda.total.toFixed(2)}
+        const row = document.createElement("tr");
+        row.className = "estoque-item";
+        let itens = venda.itens.map(item => `${item.nome} (Qtd: ${item.quantidade})`).join(", ");
+        row.innerHTML = `
+            <td>${venda.data}</td>
+            <td>${venda.cliente}</td>
+            <td>${itens}</td>
+            <td>R$${venda.total.toFixed(2)}</td>
         `;
-        vendasDiv.appendChild(div);
+        tbody.appendChild(row);
     });
+    vendasDiv.appendChild(table);
 }
 
 function confirmarDeletarVendas() {
