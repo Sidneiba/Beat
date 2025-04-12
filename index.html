@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bem-vindo - Mercado do Bairro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="manifest" href="/manifest.json">
+</head>
+<body class="intro">
+    <nav class="navbar">
+        <a href="index.html"><i class="fas fa-home"></i> Início</a>
+        <a href="login.html"><i class="fas fa-sign-in-alt"></i> Login</a>
+        <a href="cadastro.html"><i class="fas fa-user-plus"></i> Cadastro</a>
+    </nav>
+    <div class="title animate-fade">Mercado do Bairro</div>
+    <div class="location animate-fade delay-1">Sinop - MT, Brasil</div>
+    <div class="developer animate-fade delay-2">Desenvolvido por Sidnei Batista Correia</div>
+    <div class="btn-group">
+        <button class="btn-3d animate-fade delay-3" onclick="window.location.href='login.html'">
+            <i class="fas fa-sign-in-alt"></i> Entrar
+        </button>
+        <button class="btn-3d animate-fade delay-3" onclick="window.location.href='cadastro.html'">
+            <i class="fas fa-user-plus"></i> Cadastre-se
+        </button>
+    </div>
+    <audio autoplay loop hidden>
+        <source src="assets/welcome.mp3" type="audio/mp3">
+    </audio>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(() => console.log('Service Worker registrado'))
+                .catch(err => console.error('Erro:', err));
+        }
+    </script>
+</body>
+</html>

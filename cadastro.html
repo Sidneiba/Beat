@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - Mercado do Bairro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="manifest" href="/manifest.json">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html"><i class="fas fa-home"></i> Início</a>
+        <a href="login.html"><i class="fas fa-sign-in-alt"></i> Login</a>
+        <a href="cadastro.html"><i class="fas fa-user-plus"></i> Cadastro</a>
+    </nav>
+    <div class="container animate-slide">
+        <h1><i class="fas fa-user-plus"></i> Cadastro</h1>
+        <form id="cadastroForm">
+            <input type="text" id="nome" placeholder="Nome completo" required>
+            <input type="text" id="endereco" placeholder="Endereço" required>
+            <input type="text" id="cep" placeholder="CEP (00000-000)" required>
+            <input type="tel" id="telefone" placeholder="Telefone (DDD)" required>
+            <input type="password" id="senha" placeholder="Senha" required>
+            <select id="tipoUsuario" required>
+                <option value="">Tipo de usuário</option>
+                <option value="cliente">Cliente</option>
+                <option value="lojista">Lojista</option>
+            </select>
+            <button type="submit" class="btn-3d"><i class="fas fa-user-plus"></i> Cadastrar</button>
+        </form>
+        <p>Já tem conta? <a href="login.html">Fazer login</a></p>
+    </div>
+    <script src="js/app.js" defer></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(() => console.log('Service Worker registrado'))
+                .catch(err => console.error('Erro:', err));
+        }
+    </script>
+</body>
+</html>

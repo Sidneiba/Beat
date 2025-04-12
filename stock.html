@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estoque - Mercado do Bairro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="manifest" href="/manifest.json">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html"><i class="fas fa-home"></i> Início</a>
+        <a href="stock.html"><i class="fas fa-warehouse"></i> Estoque</a>
+        <a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Sair</a>
+    </nav>
+    <div class="container animate-slide">
+        <h1><i class="fas fa-warehouse"></i> Gestão de Estoque</h1>
+        <h2>Adicionar Produto</h2>
+        <form id="produtoForm">
+            <input type="text" id="nomeProduto" placeholder="Nome do Produto" required>
+            <input type="text" id="tipoProduto" placeholder="Tipo (ex.: Branco)" required>
+            <input type="text" id="volumeProduto" placeholder="Volume (ex.: 5kg)" required>
+            <input type="text" id="marcaProduto" placeholder="Marca" required>
+            <input type="text" id="codigoProduto" placeholder="Código (ex.: COD101)" required>
+            <input type="number" id="quantidadeProduto" placeholder="Quantidade" min="0" required>
+            <input type="number" id="precoProduto" placeholder="Preço" step="0.01" min="0" required>
+            <button type="submit" class="btn-3d"><i class="fas fa-plus"></i> Adicionar</button>
+        </form>
+        <h2>Estoque Atual</h2>
+        <div id="estoque" class="estoque-lista"></div>
+        <button class="btn-3d" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i> Sair
+        </button>
+    </div>
+    <script src="js/app.js" defer></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(() => console.log('Service Worker registrado'))
+                .catch(err => console.error('Erro:', err));
+        }
+        window.onload = () => {
+            const usuario = JSON.parse(localStorage.getItem("usuarioAtual"));
+            if (!usuario) {
+                alert("Faça login primeiro!");
+                window.location.href = "login.html";
+            } else {
+                exibirEstoque();
+            }
+        };
+    </script>
+</body>
+</html>

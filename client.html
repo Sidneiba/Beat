@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cliente - Mercado do Bairro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="manifest" href="/manifest.json">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html"><i class="fas fa-home"></i> Início</a>
+        <a href="client.html"><i class="fas fa-user"></i> Cliente</a>
+        <a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Sair</a>
+    </nav>
+    <div class="container animate-slide">
+        <h1><i class="fas fa-user"></i> Área do Cliente</h1>
+        <p>Bem-vindo! Aqui você pode fazer pedidos em breve.</p>
+        <button class="btn-3d" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i> Sair
+        </button>
+    </div>
+    <script src="js/app.js" defer></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(() => console.log('Service Worker registrado'))
+                .catch(err => console.error('Erro:', err));
+        }
+        window.onload = () => {
+            const usuario = JSON.parse(localStorage.getItem("usuarioAtual"));
+            if (!usuario) {
+                alert("Faça login primeiro!");
+                window.location.href = "login.html";
+            }
+        };
+    </script>
+</body>
+</html>
