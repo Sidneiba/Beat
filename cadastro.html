@@ -3,42 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro - Mercado do Bairro</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <meta name="description" content="Mercado do Bairro - Cadastro de usuários">
+    <meta name="keywords" content="mercado, bairro, cadastro, cliente, lojista">
+    <meta name="theme-color" content="#50C878">
+    <title>Mercado do Bairro - Cadastro</title>
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="assets/favicon-96x96.png">
+    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 </head>
 <body>
-    <nav class="navbar">
-        <a href="index.html"><i class="fas fa-home"></i> Início</a>
+    <div class="navbar">
         <a href="login.html"><i class="fas fa-sign-in-alt"></i> Login</a>
         <a href="cadastro.html"><i class="fas fa-user-plus"></i> Cadastro</a>
-    </nav>
+    </div>
     <div class="container animate-slide">
         <h1><i class="fas fa-user-plus"></i> Cadastro</h1>
         <form id="cadastroForm">
-            <input type="text" id="nome" placeholder="Nome completo" required>
-            <input type="text" id="endereco" placeholder="Endereço" required>
-            <input type="text" id="cep" placeholder="CEP (00000-000)" required>
-            <input type="tel" id="telefone" placeholder="Telefone (DDD)" required>
-            <input type="password" id="senha" placeholder="Senha" required>
+            <input type="text" id="nome" placeholder="Nome de usuário" required>
+            <input type="text" id="endereco" placeholder="Endereço (Rua, Número, Cidade, Estado)" required>
+            <input type="text" id="cep" placeholder="CEP (12345-678)" required>
+            <input type="tel" id="telefone" placeholder="Telefone com DDD" required>
+            <input type="password" id="senha" placeholder="Senha (mínimo 6 caracteres)" required>
             <select id="tipoUsuario" required>
-                <option value="">Tipo de usuário</option>
+                <option value="">Selecione o tipo</option>
                 <option value="cliente">Cliente</option>
                 <option value="lojista">Lojista</option>
             </select>
             <button type="submit" class="btn-3d"><i class="fas fa-user-plus"></i> Cadastrar</button>
         </form>
-        <p>Já tem conta? <a href="login.html">Fazer login</a></p>
     </div>
-    <script src="js/app.js" defer></script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js')
-                .then(() => console.log('Service Worker registrado'))
-                .catch(err => console.error('Erro:', err));
-        }
-    </script>
+    <script src="js/app.js"></script>
 </body>
 </html>

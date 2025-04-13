@@ -1,7 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
+    <meta
+
+ charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Estoque - Mercado do Bairro</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
@@ -13,6 +16,7 @@
     <nav class="navbar">
         <a href="index.html"><i class="fas fa-home"></i> Início</a>
         <a href="stock.html"><i class="fas fa-warehouse"></i> Estoque</a>
+        <a href="caixa.html"><i class="fas fa-cash-register"></i> Caixa</a>
         <a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Sair</a>
     </nav>
     <div class="container animate-slide">
@@ -30,9 +34,6 @@
         </form>
         <h2>Estoque Atual</h2>
         <div id="estoque" class="estoque-lista"></div>
-        <button class="btn-3d" onclick="logout()">
-            <i class="fas fa-sign-out-alt"></i> Sair
-        </button>
     </div>
     <script src="js/app.js" defer></script>
     <script>
@@ -43,8 +44,8 @@
         }
         window.onload = () => {
             const usuario = JSON.parse(localStorage.getItem("usuarioAtual"));
-            if (!usuario) {
-                alert("Faça login primeiro!");
+            if (!usuario || usuario.tipoUsuario !== "lojista") {
+                alert("Acesso restrito a lojistas!");
                 window.location.href = "login.html";
             } else {
                 exibirEstoque();

@@ -1,4 +1,4 @@
-const CACHE_NAME = "mercado-bairro-v3";
+const CACHE_NAME = "mercado-bairro-v4";
 const urlsToCache = [
     "/",
     "/index.html",
@@ -6,11 +6,17 @@ const urlsToCache = [
     "/cadastro.html",
     "/client.html",
     "/stock.html",
+    "/caixa.html",
     "/css/style.css",
     "/js/app.js",
     "/manifest.json",
     "/assets/welcome.mp3",
+    "/assets/web-app-manifest-192x192.png",
+    "/assets/web-app-manifest-512x512.png",
+    "/assets/favicon-96x96.png",
+    "/assets/apple-touch-icon.png",
     "https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap",
+    "https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap",
     "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
 ];
 

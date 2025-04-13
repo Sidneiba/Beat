@@ -3,39 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cliente - Mercado do Bairro</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <meta name="description" content="Mercado do Bairro - Compras locais para clientes">
+    <meta name="keywords" content="mercado, bairro, compras, cliente">
+    <meta name="theme-color" content="#50C878">
+    <title>Mercado do Bairro - Compras</title>
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="assets/favicon-96x96.png">
+    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
 </head>
 <body>
-    <nav class="navbar">
-        <a href="index.html"><i class="fas fa-home"></i> Início</a>
-        <a href="client.html"><i class="fas fa-user"></i> Cliente</a>
+    <div class="navbar">
+        <a href="client.html"><i class="fas fa-shopping-cart"></i> Compras</a>
         <a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Sair</a>
-    </nav>
-    <div class="container animate-slide">
-        <h1><i class="fas fa-user"></i> Área do Cliente</h1>
-        <p>Bem-vindo! Aqui você pode fazer pedidos em breve.</p>
-        <button class="btn-3d" onclick="logout()">
-            <i class="fas fa-sign-out-alt"></i> Sair
-        </button>
     </div>
-    <script src="js/app.js" defer></script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js')
-                .then(() => console.log('Service Worker registrado'))
-                .catch(err => console.error('Erro:', err));
-        }
-        window.onload = () => {
-            const usuario = JSON.parse(localStorage.getItem("usuarioAtual"));
-            if (!usuario) {
-                alert("Faça login primeiro!");
-                window.location.href = "login.html";
-            }
-        };
-    </script>
+    <div class="container animate-slide">
+        <h1><i class="fas fa-shopping-cart"></i> Compras</h1>
+        <h2>Selecionar Loja</h2>
+        <select id="lojistaSelect" onchange="selecionarLojista(this.value)" class="dropdown-lojistas">
+            <option value="">Selecione um lojista</option>
+        </select>
+        <h2>Catálogo</h2>
+        <div id="catalogo" class="notebook-table"></div>
+        <h2>Carrinho</h2>
+        <div id="carrinho" class="notebook-table"></div>
+        <div class="total">Total: R$<span id="totalCarrinho">0.00</span></div>
+        <button onclick="realizarCheckout()" class="btn-3d"><i class="fas fa-check"></i> Finalizar Compra</button>
+        <h2>Chat com Loja</h2>
+        <div id="chat" class="chat-box"></div>
+        <input type="text" id="mensagemInput" placeholder="Digite sua mensagem">
+        <button id="enviarMensagem" class="btn-3d"><i class="fas fa-paper-plane"></i> Enviar</button>
+    </div>
+    <script src="js/app.js"></script>
 </body>
 </html>
